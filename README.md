@@ -4,6 +4,12 @@ Welcome to the **Trip Planner** web application! This project is a cutting-edge 
 
 ---
 
+## 🌐 Hosted Application
+
+Access the live application here: [**Trip Planner**](https://your-hosted-app-link.com)
+
+---
+
 ## 🚀 Features
 
 - **Live Data Integration**: Scrapes real-time travel information using Bright Data's scraping browser and Puppeteer.
@@ -41,10 +47,3 @@ Welcome to the **Trip Planner** web application! This project is a cutting-edge 
 - **Bright Data Account**: Access to Bright Data's scraping tools
 - **Stripe Account**: For payment integration
 - **Gemini AI API Key**: To enable AI-based features
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/trip-planner.git
-   cd trip-planner
