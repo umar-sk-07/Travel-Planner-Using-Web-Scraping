@@ -1,0 +1,128 @@
+./src/lib/queue.ts
+PS C:\Project\Hyped_Journey_two\nextjs-trip-planner> npm run dev
+>> 
+
+> nextjs-trip-planner@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+  - Environments: .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 1495ms (371 modules)
+ ✓ Ready in 4.4s
+ ○ Compiling /search-hotels ...
+ ✓ Compiled /search-hotels in 6.7s (4524 modules)
+ GET /search-hotels 200 in 7577ms
+ ✓ Compiled in 1197ms (2049 modules)
+ ○ Compiling /api/auth/me ...
+ ✓ Compiled /api/auth/me in 1077ms (2591 modules)
+in me
+in token undefined
+ GET /api/auth/me 200 in 1215ms
+in me
+in token undefined
+ GET /api/auth/me 200 in 11ms
+ ○ Compiling /api/hotels/scrape ...
+ ⚠ ./node_modules/bullmq/dist/esm/classes/child-processor.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/bullmq/dist/esm/classes/child-processor.js
+./node_modules/bullmq/dist/esm/classes/index.js
+./node_modules/bullmq/dist/esm/index.js
+./src/lib/queue.ts
+./src/app/api/hotels/scrape/route.ts
+ GET /api/hotels/scrape?location=Dubai 200 in 1457ms
+ ⚠ ./node_modules/bullmq/dist/esm/classes/child-processor.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/bullmq/dist/esm/classes/child-processor.js
+./node_modules/bullmq/dist/esm/classes/index.js
+./node_modules/bullmq/dist/esm/index.js
+./src/lib/queue.ts
+./src/app/api/hotels/scrape/route.ts
+ ⚠ ./node_modules/bullmq/dist/esm/classes/child-processor.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/bullmq/dist/esm/classes/child-processor.js
+./node_modules/bullmq/dist/esm/classes/index.js
+./node_modules/bullmq/dist/esm/index.js
+./src/lib/queue.ts
+./src/app/api/hotels/scrape/route.ts
+ GET /api/hotels/scrape-status?jobId=124 200 in 313ms
+Connected! Navigating to https://www.kayak.co.in/stays
+ GET /api/hotels/scrape-status?jobId=124 200 in 10ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 13ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 19ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 12ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 22ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 13ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 13ms
+Navigated! Scraping page content...
+Page Viewport set.
+ GET /api/hotels/scrape-status?jobId=124 200 in 13ms
+Wait for selector complete.
+ GET /api/hotels/scrape-status?jobId=124 200 in 11ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 30ms
+Page location typing complete.
+ GET /api/hotels/scrape-status?jobId=124 200 in 34ms
+Page li selector complete.
+ GET /api/hotels/scrape-status?jobId=124 200 in 37ms
+Page li click complete.
+ GET /api/hotels/scrape-status?jobId=124 200 in 30ms
+Page button selector complete.
+ GET /api/hotels/scrape-status?jobId=124 200 in 23ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 26ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 32ms
+Timeout Complete. [New Page Open]
+Starting Page Evaluation
+ GET /api/hotels/scrape-status?jobId=124 200 in 28ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 12ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 16ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 30ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 34ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 26ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 29ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 23ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 16ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 13ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 18ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 13ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 13ms
+ GET /api/hotels/scrape-status?jobId=124 200 in 29ms
+Error during hotel scraping: TimeoutError: Waiting for selector `.yuAt` failed: Waiting failed: 60000ms exceeded
+    at new WaitTask (C:\Project\Hyped_Journey_two\nextjs-trip-planner\node_modules\puppeteer-core\lib\cjs\puppeteer\common\WaitTask.js:50:34)
+    at IsolatedWorld.waitForFunction (C:\Project\Hyped_Journey_two\nextjs-trip-planner\node_modules\puppeteer-core\lib\cjs\puppeteer\api\Realm.js:25:26)
+    at CSSQueryHandler.waitFor (C:\Project\Hyped_Journey_two\nextjs-trip-planner\node_modules\puppeteer-core\lib\cjs\puppeteer\common\QueryHandler.js:172:95)
+    at async CdpFrame.waitForSelector (C:\Project\Hyped_Journey_two\nextjs-trip-planner\node_modules\puppeteer-core\lib\cjs\puppeteer\api\Frame.js:523:21)
+    at async CdpPage.waitForSelector (C:\Project\Hyped_Journey_two\nextjs-trip-planner\node_modules\puppeteer-core\lib\cjs\puppeteer\api\Page.js:1367:20)
+    at async startHotelScraping (webpack-internal:///(instrument)/./src/scraping/hotelScraping.ts:43:9)
+    at async Worker.connection.connection [as processFn] (webpack-internal:///(instrument)/./src/instrumentation.ts:142:36)
+    at async Worker.processJob (webpack-internal:///(instrument)/./node_modules/bullmq/dist/esm/classes/worker.js:475:28)
+    at async Worker.retryIfFailed (webpack-internal:///(instrument)/./node_modules/bullmq/dist/esm/classes/worker.js:660:24)
+Scraping Complete, 0 hotels found.
+Job Marked as complete.
+Starting Loop for Hotels
+Browser closed successfully.
+ GET /api/hotels/scrape-status?jobId=124 200 in 29ms
+ ⚠ ./node_modules/bullmq/dist/esm/classes/child-processor.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/bullmq/dist/esm/classes/child-processor.js
+./node_modules/bullmq/dist/esm/classes/index.js
+./node_modules/bullmq/dist/esm/index.js
+./src/lib/queue.ts
+./src/app/api/hotels/scrape/route.ts
+ ✓ Compiled /hotels in 1120ms (4547 modules)
+ ✓ Compiled /api/auth/me in 263ms (2598 modules)
+in me
+in token undefined
+ GET /api/auth/me 200 in 336ms

@@ -2,7 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+
+
+.bg-custom-gradient {
+  background-color: #923cb5;
+  background-image: linear-gradient(147deg, #923cb5 0%, #000000 74%);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: transparent;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+
+.parallax {
+  transition: 0.45s cubic-bezier(0.2, 0.49, 0.32, 0.99); /* Parallax transition */
+}
+
+
+
+
+
+
+
+/* :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
@@ -30,4 +65,4 @@ body {
   .text-balance {
     text-wrap: balance;
   }
-}
+} */
