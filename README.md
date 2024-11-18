@@ -47,4 +47,3 @@ Access the live application here: [**Trip Planner**](https://your-hosted-app-lin
 - **Bright Data Account**: Access to Bright Data's scraping tools
 - **Stripe Account**: For payment integration
 - **Gemini AI API Key**: To enable AI-based features
->>>>>>> f2f46dfb9dc5524ec85d0b4c63e2dfd499a4731c
