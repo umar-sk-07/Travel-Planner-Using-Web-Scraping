@@ -129,6 +129,13 @@ const SearchHotels = () => {
                     <div className="absolute inset-0 bg-black bg-opacity-10 backdrop-blur-md rounded-small"></div>
                     <Listbox
                       aria-label="Actions"
+                      selectedKeys={
+                        selectedCity ? new Set([selectedCity]) : new Set()
+                      }
+                      onSelectionChange={(keys) => {
+                        const nextKey = Array.from(keys)[0];
+                        if (nextKey) setSelectedCity(nextKey as string);
+                      }}
                       onAction={(key) => {
                         setSelectedCity(key as string);
                         setCities([]);

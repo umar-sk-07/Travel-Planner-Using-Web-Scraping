@@ -68,20 +68,34 @@ const ScrapeTrips = () => {
               />
 
               <div className="w-full min-h-[200px] max-w-[260px] border-small px-1 py-2 rounded-small border-default-200 dark:border-default-100 mt-5">
-                <Listbox
-                  aria-label="Actions"
-                  onAction={(key) => setSelectedCity(key as string)}
-                >
-                  {cities.map((city) => (
-                    <ListboxItem
-                      key={city}
-                      color="primary"
-                      className="text-primary-500"
-                    >
-                      {city}
-                    </ListboxItem>
-                  ))}
-                </Listbox>
+                {cities.length > 0 ? (
+                  <Listbox
+                    aria-label="Actions"
+                    selectedKeys={
+                      selectedCity ? new Set([selectedCity]) : new Set()
+                    }
+                    onSelectionChange={(keys) => {
+                      const nextKey = Array.from(keys)[0];
+                      if (nextKey) setSelectedCity(nextKey as string);
+                    }}
+                    onAction={(key) => setSelectedCity(key as string)}
+                    emptyContent="No results"
+                  >
+                    {cities.map((city) => (
+                      <ListboxItem
+                        key={city}
+                        color="primary"
+                        className="text-primary-500"
+                      >
+                        {city}
+                      </ListboxItem>
+                    ))}
+                  </Listbox>
+                ) : (
+                  <div className="p-3 text-sm text-default-500">
+                    Type to search and select a city.
+                  </div>
+                )}
               </div>
             </Tab>
             <Tab key="url" title="Flights">

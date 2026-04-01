@@ -149,6 +149,11 @@ const SearchFlights = () => {
                     <div className="absolute inset-0 bg-black bg-opacity-10 backdrop-blur-md rounded-small"></div>
                     <Listbox
                       aria-label="Actions"
+                      selectedKeys={source ? new Set([source]) : new Set()}
+                      onSelectionChange={(keys) => {
+                        const nextKey = Array.from(keys)[0];
+                        if (nextKey) setSource(nextKey as string);
+                      }}
                       onAction={(key) => {
                         setSource(key as string);
                         setSourceOptions([]);
@@ -199,6 +204,11 @@ const SearchFlights = () => {
                     <div className="absolute inset-0 bg-black bg-opacity-10 backdrop-blur-md rounded-small"></div>
                     <Listbox
                       aria-label="Actions"
+                      selectedKeys={destination ? new Set([destination]) : new Set()}
+                      onSelectionChange={(keys) => {
+                        const nextKey = Array.from(keys)[0];
+                        if (nextKey) setDestination(nextKey as string);
+                      }}
                       onAction={(key) => {
                         setDestination(key as string);
                         setDestinationOptions([]);
