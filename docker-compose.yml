@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: trip_planner
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d trip_planner"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build: .
+    command: npx prisma db push --accept-data-loss
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://user:password@postgres:5432/trip_planner
+
+  nextjs:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://user:password@postgres:5432/trip_planner
+      JWT_KEY: ${JWT_KEY}
+      SBR_WS_ENDPOINT: ${SBR_WS_ENDPOINT}
+      NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY: ${NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY}
+      STRIPE_KEY: ${STRIPE_KEY}
+      NEXT_PUBLIC_STRIPE_PUBLIC_KEY: ${NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
+      NEXT_PUBLIC_DOMAIN: http://localhost:3000
+      REDIS_URL: redis://redis:6379
+
+volumes:
+  postgres_data:
