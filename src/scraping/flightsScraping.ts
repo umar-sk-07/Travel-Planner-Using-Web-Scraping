@@ -42,13 +42,36 @@ export const startFlightScraping = async (page: Page): Promise<Flight[]> => {
         flightElement.querySelector(".VY2U")?.children[1]?.innerText || ""
       ).trim();
 
-      // Extract price
-      const price = parseInt(
-        (flightElement.querySelector(".f8F1-price-text")?.innerText || "")
-          .replace(/[^\d]/g, "")
-          .trim(),
-        10
-      );
+      // Extract price — Kayak obfuscates class names, so try multiple approaches
+      const priceSelectors = [
+        ".f8F1-price-text",
+        "[class*='price-text']",
+        "[class*='Price']",
+        "[class*='price']",
+        ".oVHK",
+        ".Iqt3",
+      ];
+      let rawPrice = "";
+      for (const sel of priceSelectors) {
+        const el = flightElement.querySelector(sel) as HTMLElement | null;
+        if (el?.innerText) { rawPrice = el.innerText; break; }
+      }
+      // Fallback: find any element whose text looks like a price (e.g. "$1,234" or "1,234")
+      if (!rawPrice) {
+        const allEls = flightElement.querySelectorAll("*");
+        for (const el of allEls) {
+          const text = (el as HTMLElement).innerText?.trim() || "";
+          // Match things like "$1,234" "₹12,345" "1,234" (3-5 digit numbers, possibly with commas)
+          if (/^[\$₹€£¥,\d\s]+$/.test(text) && /\d{3,}/.test(text) && text.length < 12) {
+            rawPrice = text;
+            break;
+          }
+        }
+      }
+      const price = parseInt(rawPrice.replace(/[^\d]/g, "").trim(), 10) || 0;
+
+      // Skip flights with no valid price or airline name
+      if (!price || !airlineName) return;
 
       flights.push({
         airlineLogo,

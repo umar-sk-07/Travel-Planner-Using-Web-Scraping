@@ -82,9 +82,10 @@ export const register = async () => {
           } else if (job.data.jobType.type === "flight") {
             console.log("in flight scraping");
             console.log("Connected! Navigating to " + job.data.url);
-            await page.goto(job.data.url);
+            await page.goto(job.data.url, { timeout: 120000, waitUntil: "domcontentloaded" });
             console.log("Navigated! Scraping page content...");
             const flights = await startFlightScraping(page);
+            console.log(`Flight scraping done. Found ${flights.length} flights:`, JSON.stringify(flights.slice(0, 2)));
 
             await prisma.jobs.update({
               where: { id: job.data.id },
@@ -92,6 +93,7 @@ export const register = async () => {
             });
 
             for (const flight of flights) {
+              if (!flight.price || isNaN(flight.price)) continue;
               await prisma.flights.create({
                 data: {
                   name: flight.airlineName,
@@ -107,14 +109,8 @@ export const register = async () => {
               });
             }
           } else if (job.data.jobType.type === "hotels") {
-            console.log("Connected! Navigating to " + job.data.url);
-            await page.goto(job.data.url, { timeout: 120000 });
-            console.log("Navigated! Scraping page content...");
-            const hotels = await startHotelScraping(
-              page,
-              browser,
-              job.data.location
-            );
+            console.log("Starting Bright Data hotel scrape for: " + job.data.location);
+            const hotels = await startHotelScraping(job.data.location);
 
             console.log(`Scraping Complete, ${hotels.length} hotels found.`);
 

@@ -1,138 +1,137 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
-import { Browser, Page } from "puppeteer";
-
-export const startHotelScraping = async (
-  page: Page,
-  browser: Browser,
-  location: string
-) => {
-  await page.setViewport({ width: 1920, height: 1080 });
-  console.log("Page Viewport set.");
-
-  await page.waitForSelector(".NhpT-mod-radius-base");
-  console.log("Wait for selector complete.");
-  
-  await page.type(".NhpT-mod-radius-base:nth-child(2)", location);
-  console.log("Page location typing complete.");
-  
-  const liSelector = "ul.EMAt li:first-child";
-  await page.waitForSelector(liSelector);
-  console.log("Page li selector complete.");
-  
-  await page.click(liSelector);
-  console.log("Page li click complete.");
-
-  // Select the start date
-  const startDateSelector = ".vn3g.vn3g-t-selected-start";
-  await page.waitForSelector(startDateSelector);
-  await page.click(startDateSelector);
-  console.log("Start date selected.");
-
-  // Select the end date
-  const endDateSelector = ".vn3g.vn3g-t-selected-end";
-  await page.waitForSelector(endDateSelector);
-  await page.click(endDateSelector);
-  console.log("End date selected.");
-
-  const buttonSelector = "#main-search-form button[type='submit']";
-  await page.waitForSelector(buttonSelector);
-  console.log("Page button selector complete.");
-
-  // Wait for the new page to open after clicking the submit button
-  const [target] = await Promise.all([
-    new Promise((resolve) => browser.once("targetcreated", resolve)),
-    await page.click(buttonSelector),
-  ]);
-
-  const newPage = await target.page();
-  await newPage.bringToFront();
-  console.log("New Page Opened.");
-
-  // Wait for the hotels section to be visible
-  await newPage.waitForSelector(".yuAt");
-  console.log("Waiting for hotel listings to load...");
-
-  // Optionally, you can scroll to ensure all hotels are loaded
-  await newPage.evaluate(async () => {
-    await new Promise((resolve) => {
-      const interval = setInterval(() => {
-        window.scrollBy(0, window.innerHeight);
-        if (document.querySelectorAll(".yuAt").length > 0) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 2000); // Scroll every 2 seconds
-    });
-  });
-  console.log("Scrolled down to load additional hotels.");
-
-  console.log("Starting scraping evaluation.");
-
-  // Attempt to scrape hotels, retrying if necessary
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const hotels = await newPage.evaluate(() => {
-      const hotels = [];
-      const selectors = document.querySelectorAll(".yuAt");
-      selectors.forEach((selector) => {
-        const title =
-          selector.querySelector(".FLpo-hotel-name")?.innerText ||
-          selector.querySelector(".FLpo-big-name")?.innerText ||
-          "";
-
-        const price = parseInt(
-          (selector.querySelector(".c1XBO")?.innerText || "").replace(/[^\d]/g, "").trim(),
-          10
-        );
-
-        const photo = selector.querySelector(".e9fk-photo img")?.src || "";
-        if (title && price && photo) hotels.push({ title, price, photo });
-      });
-      return hotels;
-    });
-
-    if (hotels.length > 0) {
-      return hotels; // Return the scraped hotels if found
-    } else {
-      console.log("No hotels found, retrying...");
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait before retrying
-    }
-  }
-
-  console.log("No hotels found after multiple attempts.");
-  return []; // Return an empty array if no hotels are found
-};
-
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
+// Bright Data Booking Hotel Listings scraper
+// dataset_id: gd_m5mbdl081229ln6t4a
+// Docs: https://docs.brightdata.com/api-reference/rest-api/scraper
+
+const BRIGHT_DATA_API_KEY = process.env.BRIGHT_DATA_API_KEY!;
+const DATASET_ID = "gd_m5mbdl081229ln6t4a";
+const BASE_URL = "https://api.brightdata.com/datasets/v3";
+
+interface BrightDataHotel {
+  url?: string;
+  hotel_id?: string;
+  title?: string;
+  location?: string;
+  country?: string;
+  city?: string;
+  images?: string[];
+  price?: number;
+  review_score?: number;
+  reviews_count?: number;
+}
+
+// Step 1: Trigger a scrape job for a Booking.com search URL
+async function triggerScrape(location: string): Promise<string> {
+  // Build a Booking.com search URL for the given location
+  const searchUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(location)}&lang=en-us`;
+
+  const res = await fetch(
+    `${BASE_URL}/trigger?dataset_id=${DATASET_ID}&format=json&uncompressed_webhook=true`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${BRIGHT_DATA_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([{ url: searchUrl }]),
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Bright Data trigger failed: ${res.status} ${text}`);
+  }
+
+  const data = await res.json();
+  const snapshotId: string = data.snapshot_id;
+  console.log(`Bright Data snapshot triggered: ${snapshotId}`);
+  return snapshotId;
+}
+
+// Step 2: Poll until the snapshot is ready (status: "ready" | "failed")
+async function waitForSnapshot(
+  snapshotId: string,
+  maxWaitMs = 600_000,
+  intervalMs = 10_000
+): Promise<void> {
+  const deadline = Date.now() + maxWaitMs;
+
+  while (Date.now() < deadline) {
+    const res = await fetch(`${BASE_URL}/progress/${snapshotId}`, {
+      headers: { Authorization: `Bearer ${BRIGHT_DATA_API_KEY}` },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Bright Data progress check failed: ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log(`Snapshot ${snapshotId} status: ${data.status}`);
+
+    if (data.status === "ready") return;
+    if (data.status === "failed") throw new Error(`Snapshot ${snapshotId} failed`);
+
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+
+  throw new Error(`Snapshot ${snapshotId} timed out after ${maxWaitMs}ms`);
+}
+
+// Step 3: Download the snapshot results
+async function fetchSnapshot(snapshotId: string): Promise<BrightDataHotel[]> {
+  const res = await fetch(`${BASE_URL}/snapshot/${snapshotId}?format=json`, {
+    headers: { Authorization: `Bearer ${BRIGHT_DATA_API_KEY}` },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Bright Data snapshot fetch failed: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// Main export — replaces the old Puppeteer-based scraper
+export const startHotelScraping = async (location: string) => {
+  console.log(`Starting Bright Data hotel scrape for: ${location}`);
+
+  const snapshotId = await triggerScrape(location);
+  await waitForSnapshot(snapshotId);
+  const raw = await fetchSnapshot(snapshotId);
+
+  console.log(`Bright Data returned ${raw.length} hotels`);
+
+  // Normalize to the shape the rest of the app expects
+  const hotels = raw
+    .filter((h) => h.title && h.price)
+    .map((h) => ({
+      title: h.title!,
+      price: h.price!,
+      photo: h.images?.[0] ?? "",
+    }));
+
+  return hotels;
+};
+
+// GET /api/hotels — returns stored hotels from DB
 export async function GET() {
   try {
     const hotels = await prisma.hotels.findMany({
       orderBy: { scrappedOn: "desc" },
     });
     if (hotels.length > 0) {
-      return NextResponse.json(
-        {
-          hotels,
-        },
-        { status: 200 }
-      );
-    } else {
-      return NextResponse.json({ msg: "No hotels found." }, { status: 404 });
+      return NextResponse.json({ hotels }, { status: 200 });
     }
+    return NextResponse.json({ msg: "No hotels found." }, { status: 404 });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        return NextResponse.json({ message: error.message }, { status: 400 });
-      }
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
+    return NextResponse.json(
+      { message: "An unexpected error occurred." },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(
-    { message: "An unexpected error occurred." },
-    { status: 500 }
-  );
 }

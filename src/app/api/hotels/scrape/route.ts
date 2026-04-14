@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const location = searchParams.get("location");
 
-    const url = "https://www.kayak.co.in/stays";
+    const url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(location ?? "")}`;
     const response = await prisma.jobs.create({
       data: { url, jobType: { type: "hotels", location } },
     });
