@@ -1,0 +1,604 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 16.3
+-- Dumped by pg_dump version 16.3
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS '';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: Bookings; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Bookings" (
+    id integer NOT NULL,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    date timestamp(3) without time zone NOT NULL,
+    "bookingType" text NOT NULL,
+    "bookingTypeId" text NOT NULL,
+    "userId" integer NOT NULL,
+    "totalAmount" integer NOT NULL,
+    "paymentIntent" text NOT NULL,
+    "isCompleted" boolean DEFAULT false NOT NULL
+);
+
+
+ALTER TABLE public."Bookings" OWNER TO postgres;
+
+--
+-- Name: Bookings_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public."Bookings_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public."Bookings_id_seq" OWNER TO postgres;
+
+--
+-- Name: Bookings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public."Bookings_id_seq" OWNED BY public."Bookings".id;
+
+
+--
+-- Name: Flights; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Flights" (
+    id integer NOT NULL,
+    name text NOT NULL,
+    logo text NOT NULL,
+    "from" text NOT NULL,
+    "to" text NOT NULL,
+    "departureTime" text NOT NULL,
+    "arrivalTime" text NOT NULL,
+    duration text NOT NULL,
+    "scrappedOn" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    price integer NOT NULL,
+    "jobId" integer NOT NULL
+);
+
+
+ALTER TABLE public."Flights" OWNER TO postgres;
+
+--
+-- Name: Flights_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public."Flights_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public."Flights_id_seq" OWNER TO postgres;
+
+--
+-- Name: Flights_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public."Flights_id_seq" OWNED BY public."Flights".id;
+
+
+--
+-- Name: Hotels; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Hotels" (
+    id integer NOT NULL,
+    name text NOT NULL,
+    image text NOT NULL,
+    price integer NOT NULL,
+    "jobId" integer NOT NULL,
+    location text NOT NULL,
+    "scrappedOn" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public."Hotels" OWNER TO postgres;
+
+--
+-- Name: Hotels_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public."Hotels_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public."Hotels_id_seq" OWNER TO postgres;
+
+--
+-- Name: Hotels_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public."Hotels_id_seq" OWNED BY public."Hotels".id;
+
+
+--
+-- Name: Jobs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Jobs" (
+    id integer NOT NULL,
+    url text NOT NULL,
+    "isComplete" boolean DEFAULT false NOT NULL,
+    status text DEFAULT 'active'::text NOT NULL,
+    "jobType" jsonb NOT NULL,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public."Jobs" OWNER TO postgres;
+
+--
+-- Name: Jobs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public."Jobs_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public."Jobs_id_seq" OWNER TO postgres;
+
+--
+-- Name: Jobs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public."Jobs_id_seq" OWNED BY public."Jobs".id;
+
+
+--
+-- Name: Trips; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Trips" (
+    id text NOT NULL,
+    name text NOT NULL,
+    nights integer NOT NULL,
+    days integer NOT NULL,
+    "destinationItinerary" jsonb NOT NULL,
+    images jsonb NOT NULL,
+    inclusions jsonb NOT NULL,
+    themes jsonb NOT NULL,
+    price integer NOT NULL,
+    "destinationDetails" jsonb NOT NULL,
+    "detailedIntineary" jsonb NOT NULL,
+    description text NOT NULL,
+    "packageIteniary" jsonb NOT NULL,
+    "scrapedOn" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public."Trips" OWNER TO postgres;
+
+--
+-- Name: User; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."User" (
+    id integer NOT NULL,
+    email text NOT NULL,
+    password text NOT NULL,
+    "firstName" text NOT NULL,
+    "lastName" text NOT NULL,
+    "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public."User" OWNER TO postgres;
+
+--
+-- Name: User_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public."User_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public."User_id_seq" OWNER TO postgres;
+
+--
+-- Name: User_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public."User_id_seq" OWNED BY public."User".id;
+
+
+--
+-- Name: _prisma_migrations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public._prisma_migrations (
+    id character varying(36) NOT NULL,
+    checksum character varying(64) NOT NULL,
+    finished_at timestamp with time zone,
+    migration_name character varying(255) NOT NULL,
+    logs text,
+    rolled_back_at timestamp with time zone,
+    started_at timestamp with time zone DEFAULT now() NOT NULL,
+    applied_steps_count integer DEFAULT 0 NOT NULL
+);
+
+
+ALTER TABLE public._prisma_migrations OWNER TO postgres;
+
+--
+-- Name: admin; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.admin (
+    id integer NOT NULL,
+    email text NOT NULL,
+    password text NOT NULL,
+    "createAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.admin OWNER TO postgres;
+
+--
+-- Name: admin_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.admin_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.admin_id_seq OWNER TO postgres;
+
+--
+-- Name: admin_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.admin_id_seq OWNED BY public.admin.id;
+
+
+--
+-- Name: Bookings id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Bookings" ALTER COLUMN id SET DEFAULT nextval('public."Bookings_id_seq"'::regclass);
+
+
+--
+-- Name: Flights id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Flights" ALTER COLUMN id SET DEFAULT nextval('public."Flights_id_seq"'::regclass);
+
+
+--
+-- Name: Hotels id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Hotels" ALTER COLUMN id SET DEFAULT nextval('public."Hotels_id_seq"'::regclass);
+
+
+--
+-- Name: Jobs id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Jobs" ALTER COLUMN id SET DEFAULT nextval('public."Jobs_id_seq"'::regclass);
+
+
+--
+-- Name: User id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."User" ALTER COLUMN id SET DEFAULT nextval('public."User_id_seq"'::regclass);
+
+
+--
+-- Name: admin id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admin ALTER COLUMN id SET DEFAULT nextval('public.admin_id_seq'::regclass);
+
+
+--
+-- Data for Name: Bookings; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Bookings" (id, "createdAt", date, "bookingType", "bookingTypeId", "userId", "totalAmount", "paymentIntent", "isCompleted") FROM stdin;
+1	2026-04-14 06:30:37.694	2026-04-14 06:29:56.113	trips	MPP-1863-66679	1	33290	pi_3TM0UbSFIqJ5O1bF19wZZDRI	f
+\.
+
+
+--
+-- Data for Name: Flights; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Flights" (id, name, logo, "from", "to", "departureTime", "arrivalTime", duration, "scrappedOn", price, "jobId") FROM stdin;
+\.
+
+
+--
+-- Data for Name: Hotels; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Hotels" (id, name, image, price, "jobId", location, "scrappedOn") FROM stdin;
+\.
+
+
+--
+-- Data for Name: Jobs; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Jobs" (id, url, "isComplete", status, "jobType", "createdAt") FROM stdin;
+7	https://packages.yatra.com/holidays/intl/search.htm?destination=Dubai	t	complete	{"type": "location"}	2026-04-14 06:24:47.056
+8	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1863-66679	t	complete	{"type": "package"}	2026-04-14 06:25:32.83
+12	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1863-66667	t	complete	{"type": "package"}	2026-04-14 06:25:32.85
+17	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1473-43089	t	complete	{"type": "package"}	2026-04-14 06:25:32.882
+14	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1863-66670	t	complete	{"type": "package"}	2026-04-14 06:25:32.868
+9	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1897-64483	t	complete	{"type": "package"}	2026-04-14 06:25:32.833
+10	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1863-66673	t	complete	{"type": "package"}	2026-04-14 06:25:32.841
+16	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1863-66682	t	complete	{"type": "package"}	2026-04-14 06:25:32.879
+15	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1473-43086	t	complete	{"type": "package"}	2026-04-14 06:25:32.873
+13	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1897-64975	t	complete	{"type": "package"}	2026-04-14 06:25:32.865
+11	https://packages.yatra.com/holidays/intl/details.htm?packageId=MPP-1473-42837	t	complete	{"type": "package"}	2026-04-14 06:25:32.846
+18	https://www.kayak.com/flights/PAR-DXB/2026-04-14/	t	failed	{"date": "2026-04-14", "type": "flight", "source": "PAR", "destination": "DXB"}	2026-04-14 06:26:55.221
+19	https://www.booking.com/searchresults.html?ss=Dubai	t	failed	{"type": "hotels", "location": "Dubai"}	2026-04-14 06:28:48.879
+20	https://www.kayak.com/flights/PAR-DXB/2026-04-14/	t	failed	{"date": "2026-04-14", "type": "flight", "source": "PAR", "destination": "DXB"}	2026-04-14 06:33:50.728
+21	https://www.kayak.com/flights/PAR-DXB/2026-04-14/	t	failed	{"date": "2026-04-14", "type": "flight", "source": "PAR", "destination": "DXB"}	2026-04-14 06:36:52.795
+22	https://www.booking.com/searchresults.html?ss=Dubai	t	failed	{"type": "hotels", "location": "Dubai"}	2026-04-14 06:38:59.589
+\.
+
+
+--
+-- Data for Name: Trips; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Trips" (id, name, nights, days, "destinationItinerary", images, inclusions, themes, price, "destinationDetails", "detailedIntineary", description, "packageIteniary", "scrapedOn") FROM stdin;
+MPP-1863-66679	Marhaba Dubai - Summer Special 2026	4	5	[{"place": "Dubai", "totalNights": 4}]	["https://imgcld.yatra.com/ytimages/image/upload/v8834235451/MarketPlaceHolidays/United Arab Emirates/shutterstock_2714763355_WgYIcc.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v7310440603/Holidays/United Arab Emirates/shutterstock_2228942621_DxRu0u.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1253594695/MarketPlaceHolidays/United Arab Emirates/tourandtrip_dubai_5_1RRnQn.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v2901063204/MarketPlaceHolidays/United Arab Emirates/tourandtrip_dubai_2_z9m8qK.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Affordable", "Adventure", "Winter Special", "Exotic", "Sightseeing"]	29990	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrival in Dubai", "value": ["Explore Dubai in all its glory with Yatra's Dubai Holidays'. From the air-conditioned interior of a 4X4, see the sands of the Arabian Desert sparkle in the sunlight with the unique experience of a desert safari. Encounter the relaxed pace of camels, navigate through rolling sand dunes and treat yourself to a delectable barbecue dinner at the end, which you can enjoy while being entertained by the mesmerizing contortions of professional belly dancers. Arrive at Dubai International Airport and proceed to your hotel or resort. Overnight stay at the hotel."]}, {"title": "Day 2 - Dubai City tour", "value": ["The Dubai City Tour begins with a pickup from your location in Bur Dubai or Deira in a comfortable, air-conditioned vehicle. The journey includes a pass by the Dubai Frame or Museum of the Future, offering glimpses of iconic architectural wonders. A photo stop at Zabeel Palace allows you to admire the royal residence's grandeur, followed by a drive past the Etihad Museum, showcasing the UAE's rich heritage. You'll then stop for photos at the Jumeirah Mosque, a masterpiece of Islamic architecture, and at Jumeirah Beach, where you can capture stunning views of the Burj Al Arab. The tour continues with a pass by Palm Jumeirah, an artificial island home to luxurious resorts, followed by a view of the Atlantis Hotel. As you drive through Dubai Marina, you'll pass by Marina Mall, a hub for shopping and entertainment, and then Mall of the Emirates, known for its indoor ski resort. Finally, you'll drive past the Burj Khalifa, the world's tallest building, before concluding the tour with a drop-off at Dubai Mall, where you can explore attractions like the Dubai Aquarium, VR Park, or Dubai Fountain, or return to your respective hotel. Evening is free for leisure. Overnight stay at the hotel."]}, {"title": "Day 3 - Desert Safari with BBQ Dinner", "value": ["Post your sumptuous breakfast, spend the first half of the day at shopping or relaxing in your rooms. Later in the noon, gear up for an exciting desert safari on the shimmering sands of Dubai. Enjoy an adrenaline-pumping safari tour and also try dune bashing, camel riding, quad biking, sand boarding etc. (at an additional cost). In the evening, you can enjoy entertaining performances like belly dancing, Tanoura Show and more that will give you a glimpse of Dubai's traditional cultures. Then end your day with a delectable meal. Overnight Stay at Hotel."]}, {"title": "Day 4 - Dhow Creek Cruise", "value": ["After a leisurely breakfast Spend your morning at leisure. In evening set out to experience a traditional dinner on the Dhow Cruise. Treat your eyes to gorgeous views of the Dubai Creek and glitzy buildings, while you relish a sumptuous dinner, accompanied by lovely music at the background. Overnight Stay at Hotel"]}, {"title": "Day 5 - Departure", "value": ["This day marks the end of a fabulous vacation to Dubai. Rise to a charming morning and indulge in a mouth-watering breakfast at your hotel. Later check out from your hotel (check-out time is 1200 hours) before you head to the airport for your flight back home."]}]	Discover the best of Dubai with Arklyte's Marhaba Dubai - 4 Nights / 5 Days holiday. Begin your journey with a comfortable stay and a city tour showcasing iconic landmarks like Burj Khalifa, Jumeirah Mosque, Palm Jumeirah, and Dubai Marina. Experience the thrill of a desert safari with dune bashing, camel rides, and a traditional BBQ dinner with live entertainment. Enjoy a relaxing evening on a Dhow Cruise along Dubai Creek, taking in the glittering skyline over a sumptuous dinner. This perfectly balanced itinerary blends adventure, culture, and leisure, giving you an unforgettable Dubai experience.	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Visit Museum of the Future", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Desert Safari with BBQ Dinner", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Spend your morning at leisure", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}]]}]	2026-04-14 06:25:43.488
+MPP-1863-66667	Dubai & Abu Dhabi - Summer Special 2026	5	6	[{"place": "Dubai", "totalNights": 5}]	["https://imgcld.yatra.com/ytimages/image/upload/v7161012059/MarketPlaceHolidays/United Arab Emirates/shutterstock_2682950503_LDMbIO.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v8387006230/MarketPlaceHolidays/United Arab Emirates/abu_dhabi_fkkKSM.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v8225909750/MarketPlaceHolidays/United Arab Emirates/DESERT_SAFFARI_9zSiSx.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1576681904/Magnum/444/Ferrari_World_xKdbKM.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v5877831882/MarketPlaceHolidays/United Arab Emirates/shutterstock_2698739117_pAABRl.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Affordable", "Adventure", "Winter Special", "Family", "Sightseeing"]	34900	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrival in Dubai", "value": ["Explore Dubai in all its glory with Yatra's Dubai Holidays'. From the air-conditioned interior of a 4X4, see the sands of the Arabian Desert sparkle in the sunlight with the unique experience of a desert safari. Encounter the relaxed pace of camels, navigate through rolling sand dunes and treat yourself to a delectable barbecue dinner at the end, which you can enjoy while being entertained by the mesmerizing contortions of professional belly dancers. Arrive at Dubai International Airport and proceed to your hotel or resort. Overnight stay at the hotel."]}, {"title": "Day 2 - Dubai City tour Meals - Breakfast", "value": ["The Dubai City Tour begins with a pickup from your location in Bur Dubai or Deira in a comfortable, air-conditioned vehicle. The journey includes a pass by the Dubai Frame or Museum of the Future, offering glimpses of iconic architectural wonders. A photo stop at Zabeel Palace allows you to admire the royal residence grandeur, followed by a drive past the Etihad Museum, showcasing the UAE rich heritage. You will then stop for photos at the Jumeirah Mosque, a masterpiece of Islamic architecture, and at Jumeirah Jumeirah, where you can capture stunning views of the Burj Al Arab. The tour continues with a pass by Palm Jumeirah, an artificial island home to luxurious resorts, followed by a view of the Atlantis Hotel. As you drive through Dubai Marina, you will pass by Marina Mall, a hub for shopping and entertainment, and then Mall of the Emirates, known for its indoor ski resort. Finally, you will drive past the Burj Khalifa, the world tallest building, before concluding the tour with a drop-off at Dubai Mall, where you can explore attractions like the Dubai Aquarium, VR Park, or Dubai Fountain, or return to your respective hotel. Overnight stay at the hotel."]}, {"title": "Day 3 - Desert Safari with BBQ Dinner", "value": ["Post your sumptuous breakfast, spend the first half of the day at shopping or relaxing in your rooms. Later in the noon, gear up for an exciting desert safari on the shimmering sands of Dubai. Enjoy an adrenaline-pumping safari tour and also try dune bashing, camel riding, quad biking, sand boarding etc. (at an additional cost). In the evening, you can enjoy entertaining performances like belly dancing, Tanoura Show and more that will give you a glimpse of Dubai's traditional cultures. Then end your day with a delectable meal. Overnight Stay at Hotel."]}, {"title": "Day 4 - Dhow Creek Cruise", "value": ["After a leisurely breakfast, spend your day at ease or plan a visit to the Dubai Frame, a remarkable 150-meter-tall architectural marvel offering breathtaking views of both Old and New Dubai (at an additional cost).Begin at the museum and gallery, where interactive exhibits and 3D projections illustrate Dubai incredible transformation. Take the elevator to the Sky Deck, where you can walk on the glass-floored bridge and enjoy a stunning 360 Degree panoramic view of the city. Step into the Virtual Gallery - Future Dubai, an immersive space featuring VR and digital projections showcasing Dubai vision for 2050.In the evening, embark on a traditional Dhow Cruise along Dubai Creek. Enjoy mesmerizing views of the illuminated skyline while indulging in a delicious dinner accompanied by soothing music. Overnight stay at the hotel."]}, {"title": "Day 5 - Abu Dhabi city tour, BAPS Temple & Grand Mosque", "value": ["Post Breakfast Embark on an enriching Abu Dhabi City Tour from Dubai where you'll explore a mix of cultural, religious, and modern landmarks. Start with a convenient hotel pickup in Dubai and enjoy a scenic drive via Sheikh Zayed Road. Visit the magnificent BAPS Abu Dhabi Hindu Temple, followed by a photo stop and lunch break at Ferrari World. Admire the\\nbreathtaking architecture of the Sheikh Zayed Grand Mosque, then pass by notable sites like Al Bateen Presidential Palace, His Highness Palace, Emirates Palace Hotel, ADNOC HQ, Etihad Towers, and Saadiyat Island. Capture stunning views at Marina Mall and Corniche, glimpse into the UAE's heritage at Heritage Village, shop for local delights at the Date Market, and drive past Yas Island, home to world-class attractions. Conclude your tour with a smooth return to Dubai by\\napproximately 9 PM."]}, {"title": "Day 6 - Departure", "value": ["This day marks the end of a fabulous vacation to Dubai. Rise to a charming morning and indulge in a mouth-watering\\nbreakfast at your hotel. Later check out from your hotel (check-out time is 1200 hours) before you head to the airport for your flight back home."]}]	Experience the best of Dubai with Arklyte's Dubai Holidays, from thrilling desert safaris and visits to iconic landmarks like the Burj Khalifa and Dubai Frame, to cultural experiences, shopping, and exciting adventures at Aqua venture Waterpark. Explore the city's rich heritage, indulge in a traditional Dhow cruise dinner, and enjoy luxurious stays before concluding your unforgettable vacation.	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Enjoy Palm Jumeirah", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Desert Safari with BBQ", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Visit to the Dubai Frame", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Visit Emirates Palace Hotel, Marina Mall", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}]]}]	2026-04-14 06:25:44.399
+MPP-1473-43089	Discover Dubai's Splendor With An Exclusive Night At Palm Jumeirah	5	6	[{"place": "Dubai", "totalNights": 5}]	["https://imgcld.yatra.com/ytimages/image/upload/v1497427988/Background_view_from_the_water_of_the_building_the_Atlantis.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v8125249913/MarketPlaceHolidays/United Arab Emirates/tourandtrip_dubai_3_5pHNQS.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1580969137/Magnum/123/Slf_4_qN0QLw.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1549878230/Magnum/123/The_Lounge_Burj_Khalifa10_uYr9Vf.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1497427350/Dubai_skyline_UAE.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1497348931/Dubai_desert_camel_safari.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1461842036/Dubai-Dubai_Miracle_Garden1.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1505134701/Atlantis_4.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1517482362/AdvNation/ANN_DES82/ann_bottom_Dubai_1OhW50.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Shopping", "Honeymoon", "Family", "Luxury", "Bestseller"]	47999	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrive in Dubai - Dhow Cruise", "value": ["Arrive at Dubai International Airport and proceed to your hotel or resort. Settle in your room and by nightfall, set out to experience a traditional dinner on the Dhow Cruise. Treat your eyes to gorgeous views of the Dubai Creek and glitzy buildings, while you relish a sumptuous dinner, accompanied by lovely music at the background."]}, {"title": "Day 2 - Dubai City Tour - 124th Floor Burj Khalifa", "value": ["Have a delicious breakfast and board your coach for a wonderful sightseeing tour of Dubai. You will get to witness iconic attractions of the city and some of the world's most stunning architectural marvels. 124th floor of Burj Khalifa (2,722 ft), one of the tallest structures in the world that adds to the charm of the city of Dubai. Get to the 124th floor of the building and enjoy a breathtaking 360-degree view of the city; an experience that you wouldn't find anywhere else!"]}, {"title": "Day 3 - Desert Safari", "value": ["Savour a sumptuous breakfast on this day and spend the first half of the day shopping or relaxing in your rooms. Later in the noon, gear up for an exciting desert safari on the shimmering sands of Dubai. Enjoy an adrenaline-pumping safari tour and also try dune bashing, camel riding, quad biking, sand boarding etc. (at an additional cost). In the evening, you can enjoy entertaining performances like belly dancing, Tanoura Show and more that will give you a glimpse of Dubai's traditional cultures. Then end your day with a delectable meal."]}, {"title": "Day 4 - DAY FREE FOR LEISURE", "value": ["After Breakfast, This day is for you to relax with your family. You can spend this day as per your own demands. You can go out shopping, explore nearby beaches or take an etiquette sunbath under the shadows of rich and tall palm trees. Go for a slow walk on the sands of beaches with your beloved ones.Capture all the good moments on the sands with your family and friends. Check out the street fresh seafood fests. As the day ends, return to the hotel and drain into a sound sleep."]}, {"title": "Day 5 - 1 Night Stay at Andaz Dubai The Palm", "value": ["After Breakfast checkout and proceed for 1 night stay at The Palm Jumeirah - Dubai - United Arab Emirates"]}, {"title": "Day 6 - DEPARTURE", "value": ["On the last day of tour, you will get some time to explore the neighborhood and shop for some gifts and souvenirs. In the afternoon, check out from the hotel and head to the airport for your return journey."]}]	In the heart of the Arabian Gulf lies the extravagant cityscape of Dubai, where opulence and grandeur blend seamlessly, a sight to woo and captivate. Among its jewels, Palm Jumeirah stands tall, a man-made marvel upon azure waters, A haven of luxury, where indulgence knows no bounds, and dreams find their home.\n<br><br>\nBeneath the twinkling skyline, a tapestry of wonders unfolds. From towering skyscrapers to pristine beaches, Dubai's allure never wanes. One night amidst the splendor of Palm Jumeirah is a glimpse into paradise,\nWhere lavish resorts adorn the coastline, offering unrivaled vistas of the sea.\n<br><br>\nA symphony of elegance awaits, with sumptuous dining and lavish amenities, each moment a brushstroke on the canvas of unforgettable memories. As the sun dips beyond the horizon, the city comes alive with shimmering lights. A spectacle of sophistication, a testament to Dubai's unmatched delights.\n<br><br>\nIndulge in the finer things, from leisurely strolls along the promenade, to decadent spa treatments that soothe the soul and rejuvenate the senses. With every breath, immerse yourself in the essence of luxury, For in Dubai, even dreams are crafted with the finest of threads.\n<br><br>\nOne night at Palm Jumeirah is but a glimpse into a world of extravagance, Where time stands still, and every desire finds its fulfillment. So, let the allure of Dubai beckon you, and surrender to its spell, For in this city of dreams, luxury knows no bounds, and wonders never cease to amaze.\n<br><br>\nTop things to do in Dubai:\n<br><br>\n1. Visit the Burj Khalifa<br><br>\n2. Explore the Dubai Mall<br><br>\n3. Go on a Desert Safari<br><br>\n4. Stroll Through the Dubai Marina<br><br>\n5. Relax at JBR Beach<br><br>\n6. Visit the Dubai Museum and Al Fahidi Fort<br><br>\n7. Discover Global Village<br><br>\n8. Tour the Palm Jumeirah<br><br>\n9. Wander Through the Al Bastakiya District<br><br>\n10. Explore the Dubai Creek	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Dhow cruise", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "124th Floor Burj Khalifa Visit", "index": 1}, {"text": "Dubai City Tour", "index": 2}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Desert Safari", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "1 Night Stay at Andaz Dubai The Palm", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}]]}]	2026-04-14 06:25:44.798
+MPP-1863-66670	Dubai Fully Loaded - Summer Special 2026	6	7	[{"place": "Dubai", "totalNights": 6}]	["https://imgcld.yatra.com/ytimages/image/upload/v1576500400/Magnum/222/Dubai_Burj_Khalifa_9ExP62.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v9632219320/MarketPlaceHolidays/United Arab Emirates/Legoland_n5d8oF.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v5951438414/MarketPlaceHolidays/United Arab Emirates/Dubai_hotel_1__WeKZMn.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v5167477533/MarketPlaceHolidays/United Arab Emirates/dubai_frame_tGH5Ca.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v6872013735/MarketPlaceHolidays/United Arab Emirates/dubai_creek_1__n3WI5G.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Romantic", "Affordable", "Adventure", "Winter Special", "Sightseeing"]	49990	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrival in Dubai", "value": ["Explore Dubai in all its glory with Yatra's Dubai Holidays'. From the air-conditioned interior of a 4X4, see the sands of the Arabian Desert sparkle in the sunlight with the unique experience of a desert safari. Encounter the relaxed pace of camels, navigate through rolling sand dunes and treat yourself to a delectable barbecue dinner at the end, which you can enjoy while being entertained by the mesmerizing contortions of professional belly dancers. Arrive at Dubai International Airport and proceed to your hotel or resort. Overnight stay at the hotel."]}, {"title": "Day 2 - Dubai City tour", "value": ["The Dubai City Tour begins with a pickup from your location in Bur Dubai or Deira in a comfortable, air-conditioned vehicle. The journey includes a pass by the Dubai Frame or Museum of the Future, offering glimpses of iconic architectural wonders. A photo stop at Zabeel Palace allows you to admire the royal residence's grandeur, followed by a drive past the Etihad Museum, showcasing the UAE's rich heritage. You'll then stop for photos at the Jumeirah Mosque, a masterpiece of Islamic architecture, and at Jumeirah Beach, where you can capture stunning views of the Burj Al Arab. The tour continues with a pass by Palm Jumeirah, an artificial island home to luxurious resorts, followed by a view of the Atlantis Hotel. As you drive\\nthrough Dubai Marina, you'll pass by Marina Mall, a hub for shopping and entertainment, and then Mall of the Emirates, known for its indoor ski resort. Finally,\\nyou'll drive past the Burj Khalifa, the world's tallest building, before concluding the\\ntour with a drop-off at Dubai Mall, where you can explore attractions like the Dubai\\nAquarium, VR Park, or Dubai Fountain, or return to your respective hotel. Overnight\\nstay at the hotel."]}, {"title": "Day 3 - Visit Museum of the Future", "value": ["Post your sumptuous breakfast, Embark on a fascinating journey to the Museum of the Future, starting with a comfortable hotel pickup. Explore groundbreaking innovations, AI advancements, and space technology on the Ground Floor, followed by an immersive space expedition on Level 1. Dive into AI-driven wellness and robotics on Level 2, then discover sustainable solutions and biodiversity conservation on Level 3. Before concluding, browse the gift shop for exclusive souvenirs or enjoy refreshments at the caf. End your experience with a seamless transfer back to your hotel or continue exploring Dubai at your own pace. Later in the noon, gear up for an exciting desert safari on the shimmering sands of Dubai. Enjoy an adrenaline-pumping safari tour and also try dune bashing, camel riding, quad biking, sand boarding etc. (at an additional cost). In the evening, you can enjoy entertaining performances like belly dancing, Tanoura Show and more that will give you a glimpse of Dubai's traditional cultures. Then end your day with a delectable meal. Overnight Stay at Hotel."]}, {"title": "Day 4 - Visit Dubai Frame", "value": ["After a leisurely breakfast, proceed to visit Dubai Frame, Arrive at the Dubai Frame and marvel at its 150-meter-tall structure, offering stunning views of Old and New Dubai. Start at the museum and gallery, showcasing Dubai's transformation through 3D projections and interactive exhibits. Take the elevator to the Sky Deck and walk on the glass-floored bridge, enjoying 360 panoramic views of the city. Step into the Virtual Gallery Future Dubai, where VR and digital projections reveal Dubai's vision for 2050.Capture breathtaking photos, Visit the souvenir shop, and enjoy a quick refreshment before your drop-off at Dubai Mall or your hotel. In evening set out to experience a Traditional dinner on the Dhow Cruise. Treat your eyes to gorgeous views of the Dubai Creek and glitzy buildings, while you relish a sumptuous dinner, accompanied by lovely music at the background. Overnight Stay at Hotel."]}, {"title": "Day 5 - Visit BAPS Temple & Grand Mosque", "value": ["Post Breakfast Embark on an enriching Abu Dhabi City Tour from Dubai where you'll Explore a mix of cultural, religious, and modern landmarks. Start with a convenient hotel pickup in Dubai and enjoy a scenic drive via Sheikh Zayed Road. Visit the magnificent BAPS Abu Dhabi Hindu Temple, followed by a photo stop and lunch break at Ferrari World. Admire the breathtaking architecture of the Sheikh Zayed Grand Mosque, then pass by notable sites like Al Bateen Presidential Palace, His Highness Palace, Emirates Palace Hotel, ADNOC HQ, Etihad Towers, and Saadiyat Island. Capture stunning views at Marina Mall and Corniche, glimpse into the UAEs heritage at Heritage Village, shop for local delights at the Date Market, and drive past Yas Island, home to world-class attractions. Conclude your tour with a smooth return to Dubai by approximately 9 PM."]}, {"title": "Day 6 - Visit Dubai Mall", "value": ["Post Breakfast, Day is free for Shopping. Start at Dubai Mall, featuring luxury brands and the Dubai Aquarium & Underwater Zoo. Explore the Gold & Spice Souks for jewelry, spices, and souvenirs. Visit Mall of the Emirates for high-end shopping and Ski Dubai, stop at The Outlet Village for designer discounts. Relax with Arabic coffee and dates before a smooth hotel drop-off."]}, {"title": "Day 7 - Departure", "value": ["This day marks the end of a fabulous vacation to Dubai. Rise to a charming morning and indulge in a mouth-watering breakfast at your hotel. Later check out from your hotel (check-out time is 1200 hours) before you head to the airport for your flight back home."]}]	Experience the best of Dubai with Arklyte's Dubai Holidays, from thrilling desert safaris and visits to iconic landmarks like the Burj Khalifa and Dubai Frame, to cultural experiences, shopping, and exciting adventures at Aqua venture Waterpark. Explore the city's rich heritage, indulge in a traditional Dhow cruise dinner, and enjoy luxurious stays before concluding your unforgettable vacation.	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Visit Museum of the Future", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Enjoy Tanoura Show", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Visit Dubai Frame", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Abu Dhabi city tour", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Explore the Gold & Spice Souks for jewelry", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}]]}]	2026-04-14 06:25:45.736
+MPP-1897-64483	Exotic Dubai Honeymoon With Desert Camping	4	5	[{"place": "Dubai", "totalNights": 4}]	["https://imgcld.yatra.com/ytimages/image/upload/v3230807680/MarketPlaceHolidays/United Arab Emirates/uae_abu_dhabi_ferrari_world_1__wY8yjQ.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v0796921721/MarketPlaceHolidays/United Arab Emirates/4_JXCKg2.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1624932443/MarketPlaceHolidays/United Arab Emirates/images_4__wbqF2J.jpeg", "https://imgcld.yatra.com/ytimages/image/upload/v1576333051/Magnum/222/Ski-Dubai_hrCVKy.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1553583888/Magnum/123/Dubai12_6leLN9.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1553583911/Magnum/123/Dubai_Frame_7zpITc.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1544610365/Magnum/Abu Dhabi Desert Dune Bashing/Abu_Dhabi_-_Desert_Dune_Bashing_SxASak.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1544513618/Magnum/Abu Dhabi/Al_Ain_Zoo_4_hI6KwR.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Affordable", "Adventure", "Honeymoon", "Winter Special", "Sightseeing"]	35000	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Transfer from Dubai Airport to Dubai Hotel and Marina Cruise with Dinner & Entertainment", "value": ["Arrive at Dubai Airport Transfer to your hotel in Dubai\\nCheck-in and freshen up\\n Evening: Dhow Cruise Marina at Dubai Marina.\\n Enjoy a Dhow dinner cruise with stunning views of the city skyline.\\n Enjoy Dinner with entertainment shows Return Hotel and over night stay"]}, {"title": "Day 2 - Dubai City Tour, Dubai Mall , Fountain Show, Burj Khalifa 124th/125th", "value": ["Morning  Breakfast at the hotel\\n Morning Dubai City Tour covering attractions\\n like Al Seef Village\\n Jumeirah Mosque\\n Jumeirah Beach\\n Burj Al Arab Front (Drive Through)\\n Souq Madinat\\n Al Qasr Hotel  Gold Plated Horses (Drive Through)\\n The Pointe  Palm Jumeirah (Photo Point 10-15 Min.)\\n Sheikh Zayed Road (Drive Through)\\n Rop At Dubai Mall Around 1 30 Visit Dubai Mall\\n one of the largest shopping malls in the world.\\n Explore the mall and have lunch\\n Evening  Witness the Dubai Fountain Show near Burj Khalifa.\\n Visit the Burj Khalifa for an observation deck experience on the 124th floor.\\nReturn Hotel and over night stay"]}, {"title": "Day 3 - Desert Safari with Bbq Dinner", "value": ["Morning: Breakfast at the hotel.\\n Afternoon: Desert Safari with dune bashing,\\n camel riding, and a traditional dinner under the stars.\\n Dune Bashing\\n Fire Show\\n Tanoura Show\\n Henna Painting\\nBelly Dance\\n Show Sand Boarding\\n Camel Ride\\n Return to the hotel Overnight in Dubai"]}, {"title": "Day 4 - Abu Dhabi City Tour with Grand Mosque", "value": ["A visit to Abu Dhabi is a must to get a deep understanding of the culture and heritage of the Arabs.\\nOur Abu Dhabi city tour would take you to the best tourist places of the Emirate city.\\nOur local tourist guide will help you best explore the storical and architectural brilliance of the city's attractions.\\nSheikh Zayed Grand Mosque (1:30-2:00 Hrs)\\nEmirates Palace, Etihad Tower Photostop on\\nRound about Corniche, King Palace (PP 10-15 Min.)\\nHeritage Village (Photo Point 10-15 Min.)\\nDates Market (If guest wants)\\nDrive Through Sadiyat Island\\nFerrari world / Yas Mall\\nAfter immersing yourself in the city's culture, head to Ferrari World Park for exhilarating rides, including roller coasters and\\nziplines.\\nEnd the day with a transfer back to your Dubai hotel for an overnight stay."]}, {"title": "Day 5 - Departure Day", "value": ["Morning: Breakfast at the hotel\\nNight: Make your way tol Airport for your departure flight.\\n Optional: Indulge in some last-minute e shopping at Dubai Mall or Duty-Free"]}]	Dubai is a city and emirate in the United Arab Emirates, renowned for luxury shopping, ultramodern architecture, and a vibrant nightlife. The skyline is dominated by the iconic Burj Khalifa, the world's tallest building at 830 meters, symbolizing the city's ambition and innovation. The city is also a major global business and tourism hub, attracting visitors from all over the world. Its rapid transformation from a desert settlement to a modern metropolis is truly remarkable.\n<br>\nAt the base of the tower is the Dubai Fountain, where water jets and lights perform choreographed shows set to music. Just offshore, artificial islands are home to landmarks such as Atlantis, adding to Dubai's reputation as a global hub for luxury and entertainment. The city also offers pristine beaches, world-class resorts, and desert safari experiences. Together, these attractions highlight Dubai's unique blend of tradition, modernity, and leisure.	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Grand Excelsior Hotel Bur Dubai"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Transfer from Dubai Airport to Dubai Hotel and Marina Cruise with Dinner & Entertainment", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Grand Excelsior Hotel Bur Dubai"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Dubai City Tour, Dubai Mall , Fountain Show, Burj Khalifa 124th/125th", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Grand Excelsior Hotel Bur Dubai"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Desert Safari with Bbq Dinner", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Grand Excelsior Hotel Bur Dubai"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Abu Dhabi City Tour", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Grand Excelsior Hotel Bur Dubai"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Departure", "index": 1}]}]]}]	2026-04-14 06:25:46.76
+MPP-1863-66673	Discover Dubai - Summer Special 2026	5	6	[{"place": "Dubai", "totalNights": 5}]	["https://imgcld.yatra.com/ytimages/image/upload/v3892627744/MarketPlaceHolidays/United Arab Emirates/shutterstock_2655083505_2sOVxa.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v8834235451/MarketPlaceHolidays/United Arab Emirates/shutterstock_2714763355_WgYIcc.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v7435214866/MarketPlaceHolidays/United Arab Emirates/shutterstock_2702785099_EUMSSY.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v2201946018/MarketPlaceHolidays/United Arab Emirates/shutterstock_2744155895_tpbDk9.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Summer Special", "Affordable", "Adventure", "Sightseeing"]	39990	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrival in Dubai", "value": ["Explore Dubai in all its glory with Yatra Dubai Holidays. From the air-conditioned interior of a 4X4, see the sands of the Arabian Desert sparkle in the sunlight with the unique experience of a desert safari. Encounter the relaxed pace of camels, navigate through rolling sand dunes and treat yourself to a delectable barbecue dinner at the end, which you can enjoy while being entertained by the mesmerizing contortions of professional belly dancers. Arrive at Dubai International Airport and proceed to your hotel or resort. Overnight stay at the hotel."]}, {"title": "Day 2 - Dubai City tour & Burj Khalifa", "value": ["The Dubai City Tour begins with a pickup from your location in Bur Dubai or Deira in a comfortable, air-conditioned vehicle. The journey includes a pass by the Dubai Frame or Museum of the Future, offering glimpses of iconic architectural wonders. A photo stop at Zabeel Palace allows you to admire the royal residence's grandeur, followed by a drive past the Etihad Museum, showcasing the UAEs rich heritage. Youll then stop for photos at the Jumeirah Mosque, a masterpiece of Islamic architecture, and at Jumeirah Beach, where you can capture stunning views of the Burj Al Arab. The tour continues with a pass by Palm Jumeirah, an artificial island home to luxurious resorts, followed by a view of the Atlantis Hotel. As you drive through Dubai Marina, youll pass by Marina Mall, a hub for shopping and entertainment, and then Mall of the Emirates, known for its indoor ski resort. Finally, youll drive past the Burj Khalifa, the worlds tallest building, before concluding the tour with a drop-off at Dubai Mall, where you can explore attractions like the Dubai Aquarium, VR Park, or Dubai Fountain, or return to your respective hotel. Evening visit to Burj Khalifa, 124th Floor. Overnight stay at the hotel"]}, {"title": "Day 3 - Desert Safari with BBQ Dinner", "value": ["Post your sumptuous breakfast, spend the first half of the day at shopping or relaxing in your rooms. Later in the noon, gear up for an exciting desert safari on the shimmering sands of Dubai. Enjoy an adrenaline-pumping safari tour and also try dune bashing, camel riding, quad biking, sand boarding etc. (at an additional cost). In the evening, you can enjoy entertaining performances like belly dancing, Tanoura Show and more that will give you a glimpse of Dubai's traditional cultures. Then end your day with a delectable meal. Overnight Stay at Hotel."]}, {"title": "Day 4 - Dubai Frame and Dhow Creek Cruise", "value": ["After a leisurely breakfast, proceed to Visit Dubai Frame, Arrive at the Dubai Frame and marvel at its 150-meter-tall structure, offering stunning views of Old and New Dubai. Start at the museum and gallery, showcasing Dubai transformation through 3D projections and interactive exhibits. Take the elevator to the Sky Deck and walk on the glass-floored bridge, enjoying 360 panoramic views of the city. Step into the Virtual Gallery Future Dubai, where VR and digital projections reveal Dubai vision for 2050. Capture breathtaking photos, visit the souvenir shop, and enjoy a quick refreshment before your drop-off at Dubai Mall or your hotel. In evening set out to experience a traditional dinner on the Dhow Cruise. Treat your eyes to gorgeous views of the Dubai Creek and glitzy buildings, while you relish a sumptuous dinner, accompanied by lovely music at the background. Overnight Stay at Hotel."]}, {"title": "Day 5 - In Dubai", "value": ["After breakfast, enjoy a leisure day for shopping or opt for an exciting visit to Aquaventure & The Lost Chambers at an additional cost. Experience aquaventure Waterpark, where you can take on thrilling rides like Poseidon's Revenge and aquaconda, float along the lazy river, or unwind on a private beach. Later, explore the Lost Chambers Aquarium, home to over 65,000 marine creatures, fascinating glass tunnels, and interactive exhibits. End the day with a comfortable drop-off at your hotel or continue exploring Dubai at your own pace. Overnight stay at the hotel."]}, {"title": "Day 6 - Departure", "value": ["This day marks the end of a fabulous vacation to Dubai. Rise to a charming morning and indulge in a mouth-watering breakfast at your hotel. Later check out from your hotel (check-out time is 1200 hours) before you head to the airport for your flight back home."]}]	Experience the best of Dubai with Arklyte's Dubai Holidays, from thrilling desert safaris and visits to iconic landmarks like the Burj Khalifa and Dubai Frame, to cultural experiences, shopping, and exciting adventures at Aqua venture Waterpark. Explore the city's rich heritage, indulge in a traditional Dhow cruise dinner, and enjoy luxurious stays before concluding your unforgettable vacation.	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Visit Burj Al Arab, Marina Mall, Museum of the Future", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Explore Dubai's traditional cultures", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Visit Dubai Frame", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Explorer Lost Chambers Aquarium", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}]]}]	2026-04-14 06:25:47.429
+MPP-1863-66682	Dubai - Kids Special - Summer Special 2026	5	6	[{"place": "Dubai", "totalNights": 5}]	["https://imgcld.yatra.com/ytimages/image/upload/v9632219320/MarketPlaceHolidays/United Arab Emirates/Legoland_n5d8oF.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1576500503/Magnum/444/Bollywood_park_dubai_1_Pf9TAQ_VMnrHd.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v2901063204/MarketPlaceHolidays/United Arab Emirates/tourandtrip_dubai_2_z9m8qK.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v0837242568/MarketPlaceHolidays/United Arab Emirates/Dubai_Creek_ksgPJ6.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Summer Special", "Affordable", "Adventure", "Kids Special", "Sightseeing"]	69990	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrival in Dubai - Dhow Cruise", "value": ["Explore Dubai in all its glory with Yatras Dubai Holidays From the airconditioned interior of a 4X4 see the sands of the Arabian Desert sparkle in the sunlight with the unique Experience of a desert safari Encounter the relaxed pace of camels navigate through rolling sand dunes and treat yourself to a delectable barbecue dinner at the end which you can enjoy while being entertained by the mesmerizing contortions of professional belly dancers Arrive at Dubai International Airport and proceed to your hotel or resort In evening set out to experience a traditional dinner on the Dhow Cruise Treat your eyes to gorgeous views of the Dubai Creek and glitzy buildings while you relish a sumptuous dinner accompanied by lovely music at the background. Overnight Stay at Hotel"]}, {"title": "Day 2 - Dubai City tour & Burj Khalifa", "value": ["The Dubai City Tour begins with a pickup from your location in Bur Dubai or Deira in a comfortable airconditioned vehicle The journey includes a pass by the Dubai Frame or Museum of the Future offering glimpses of iconic architectural wonders A photo stop at Zabeel Palace allows you to admire the royal residences grandeur followed by a drive past the Etihad Museum showcasing the UAEs rich heritage Youll then stop for photos at the Jumeirah Mosque a masterpiece of Islamic architecture and at Jumeirah Beach where you can capture stunning views of the Burj Al Arab The tour continues with a pass by Palm Jumeirah an artificial island home to luxurious resorts followed by a view of the Atlantis Hotel As you drive through Dubai Marina you will pass by Marina Mall a hub for shopping and entertainment and then Mall of the Emirates known for its indoor ski resort Finally youll drive past the Burj Khalifa the worlds tallest building before concluding the tour with a dropoff at Dubai Mall where you can explore attractions like the Dubai Aquarium VR Park or Dubai Fountain Evening visit to Burj Khalifa 124th Floor Overnight stay at the hotel."]}, {"title": "Day 3 - Green Planet Dubai & Desert Safari with BBQ Dinner", "value": ["Post your sumptuous breakfast Start your adventure with a convenient hotel pickup and transfer to Green Planet Dubai an awe-inspiring indoor tropical rainforest home to over 3000 plants and animals Step into the biodome and explore its four unique layers the Canopy Mid story Forest Floor and Flooded Rainforest where you'll encounter exotic wildlife like toucans sloths tree frogs and reptiles Marvel at the worlds largest manmade indoor tree providing a thriving habitat for various species Enjoy interactive experiences including animal feeding sessions and closeup encounters Conclude your nature filled day with a comfortable drop off back at your hotel Evening enjoy an adrenaline pumping safari tour and also try dune bashing camel riding quad biking sand boarding etc. at an additional cost In the evening you can enjoy entertaining performances like belly dancing Tanoura Show and more that will give you a glimpse of Dubai's traditional cultures Then end your day with a delectable meal Overnight Stay at Hotel."]}, {"title": "Day 4 - Dubai Parks & Resort - Choose any 1 Park", "value": ["After a leisurely breakfast proceed to visit Dubai Parks Resort Embark on a thrilling day at Dubai Parks Resorts with a convenient hotel pickup transferring you to the regions largest theme park destination Choose to explore Motion gate Dubai where Hollywood inspired rides and live shows bring your favorite movies to life or LEGOLAND Dubai LEGOLAND Water Park a paradise for families with interactive rides and water adventures Take a break to enjoy delicious dining and shopping at Riverland Dubai before concluding your fun filled experience with a comfortable drop off at your hotel. Overnight Stay at Hotel"]}, {"title": "Day 5 - Aqua venture & Lost Chamber", "value": ["After Breakfast, Embark on an exhilarating adventure with a convenient hotel pickup, heading to Atlantis The Palm, home to the thrilling Aqua venture Waterpark and the mesmerizing Lost Chambers Aquarium. Experience heart-pounding rides like Poseidon Revenge, Aqua conda, and the Leap of Faith, float along the lazy river, or unwind on the private beach. Little ones can enjoy endless fun at Splashers Kids Play Area. Step into the Lost Chambers Aquarium, where glass tunnels reveal a breathtaking underwater world with over 65,000 marine creatures, mythical Atlantis-themed exhibits, and captivating marine life, including sharks, rays, and vibrant fish. Conclude your adventure with a smooth transfer back to your hotel."]}, {"title": "Day 6 - Departure", "value": ["This day marks the end of a fabulous vacation to Dubai. Rise to a charming morning and indulge in a mouth-watering breakfast at your hotel. Later check out from your hotel (check-out time is 1200 hours) before you head to the airport for your flight back home."]}]	Dubai offers a wealth of attractions and activities for children, making it a popular destination for family vacations. Key highlights include theme parks like Legoland Dubai and Dubai Parks and Resorts, interactive experiences at Kidzania, water fun at Wild Wadi Waterpark and Aqua venture, as well as educational stops like the Dubai Aquarium &amp; Underwater Zoo and the Dubai Dolphinarium. With diverse entertainment options, shopping malls, and outdoor activities, Dubai is a vibrant, family-friendly destination catering to kids of all ages.	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Dubai City tour & Burj Khalifa", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Enjoy at Desert Safari with BBQ Dinner", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Explore Motion gate Dubai", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Step into the Lost Chambers Aquarium", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Gateway Hotel"}]]}]	2026-04-14 06:25:47.964
+MPP-1473-43086	Kids Special Dubai With Free Ski Dubai & Dubai Dolphinarium	4	5	[{"place": "Dubai", "totalNights": 4}]	["https://imgcld.yatra.com/ytimages/image/upload/v1514458183/Legoland_Dubai_Parks_and_Resorts_Dubai_1514458604.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1514458057/Um_Suqueim_Beach_Dubai_1514458478.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1490189535/MarketPlaceActivities/MPACT-10-44/4_brauip.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1435666246/Dubai_rr.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1450091474/Aquarium_in_Dubai_Mall.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1450091512/Jumeirah_Beach22.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1450091474/Jumeirah_Beach4.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1476872040/Dubai_Dubai_Zoo.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1462257019/Snow_Park4.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Shopping", "Honeymoon", "Family", "Luxury", "Bestseller"]	46545	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrive in Dubai - Dhow Cruise", "value": ["Arrive at Dubai International Airport and proceed to your hotel or resort. Settle in your room and by nightfall, set out to experience a traditional dinner on the Dhow Cruise. Treat your eyes to gorgeous views of the Dubai Creek and glitzy buildings, while you relish a sumptuous dinner, accompanied by lovely music at the background."]}, {"title": "Day 2 - Dubai City Tour - 124th Floor Burj Khalifa", "value": ["Have a delicious breakfast and board your coach for a wonderful sightseeing tour of Dubai. You will get to witness iconic attractions of the city and some of the world's most stunning architectural marvels. 124th floor of Burj Khalifa (2,722 ft), one of the tallest structures in the world that adds to the charm of the city of Dubai. Get to the 124th floor of the building and enjoy a breathtaking 360-degree view of the city; an experience that you wouldn't find anywhere else!"]}, {"title": "Day 3 - Desert Safari", "value": ["Savour a sumptuous breakfast on this day and spend the first half of the day shopping or relaxing in your rooms. Later in the noon, gear up for an exciting desert safari on the shimmering sands of Dubai. Enjoy an adrenaline-pumping safari tour and also try dune bashing, camel riding, quad biking, sand boarding etc. (at an additional cost). In the evening, you can enjoy entertaining performances like belly dancing, Tanoura Show and more that will give you a glimpse of Dubai's traditional cultures. Then end your day with a delectable meal."]}, {"title": "Day 4 - Ski Dubai & Dubai Dolphinarium", "value": ["After Breakfast, get ready for Ski Dubai and after that enjoy Dubai Dolphinarium."]}, {"title": "Day 5 - Departure", "value": ["After Breakfast Day is free for shopping, and in afternoon check out from hotel and drop at the airport"]}]	Embark on a magical journey to Dubai, where wonders await both young and old,\nA paradise of endless adventures and unforgettable memories to behold.\nIn this Kids Special Dubai escapade, excitement knows no bounds,\nWith complimentary access to Ski Dubai and the Dubai Dolphinarium, where joy resounds.\n\nAt Ski Dubai, amidst the scorching desert heat, lies a winter wonderland so grand where children frolic in the snow, building castles and making memories hand in hand. With free access to this snowy paradise, laughter echoes through the air as little ones glide down slopes and experience the thrill of a polar affair.\n\nBut the adventure doesn't end there, for Dubai's treasures are aplenty,\nAs the sun sets, it's time to journey to the Dubai Dolphinarium, a spectacle so plenty. Witness the grace and charm of dolphins as they dance and play,\nCaptivating young hearts with their mesmerizing display.\n\nThe Kids Special Dubai package is a symphony of delight,\nWhere every moment is filled with wonder, from morning until night.\nFrom skiing on snow-capped slopes to marveling at aquatic wonders,\nDubai's magic enchants both young and old, as dreams are truly plundered.\n\nSo, gather your little ones and set sail for this desert oasis,\nWhere adventure awaits at every turn, and joy is never remiss.\nWith Ski Dubai and the Dubai Dolphinarium in tow,\nMake memories that'll last a lifetime, in Dubai's enchanting glow.	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Dhow cruise", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "124th Floor Burj Khalifa Visit", "index": 1}, {"text": "Dubai City Tour", "index": 2}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Desert Safari", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Ski Dubai & Dubai Dolphinarium", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada Plaza by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Day for shopping", "index": 1}]}]]}]	2026-04-14 06:25:48.384
+MPP-1897-64975	Abu Dhabi & Dubai Delights	5	6	[{"place": "Dubai", "totalNights": 3}, {"place": "Abu Dhabi", "totalNights": 2}]	["https://imgcld.yatra.com/ytimages/image/upload/v1544607905/Magnum/Camel Ride/Abu_Dhabi_-_Camel_Ride_1_C5MA0T.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v7189404355/MarketPlaceHolidays/United Arab Emirates/Dubai_With_Abu_Dhabi_Tour_1__DRJhiN.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v5951438414/MarketPlaceHolidays/United Arab Emirates/Dubai_hotel_1__WeKZMn.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v8125249913/MarketPlaceHolidays/United Arab Emirates/tourandtrip_dubai_3_5pHNQS.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1544618195/Magnum/Abu Dhabi Dhow Ride/Abu_Dhabi_-_Dhow_Ride_6YmJMf.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1544523643/Magnum/Abu Dhabi Warner Bros/Abu_Dhabi_Warner_Bros_Bedrock_River_Adventure_qw1IVT.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Special Interest Tours", "Adventure", "Honeymoon", "Family", "Cultural & Heritage"]	39500	[{"name": "Abu Dhabi", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1435668095/AbuDhabi4.jpg", "description": "The capital of United Arab Emirates, Abu Dhabi is also the second most populated city in UAE. Here you can see amazing sights like the largest hand-loomed carpet in the world, a falcon hospital, man-made islands, the skyscraper with the greatest lean, the biggest sand dunes, the fastest roller coaster and much more. The city is just 1.5 hours away from exciting Dubai but is laid back and peaceful with more parks, tree-lined streets, and wider roads. Though it has more of an authentic Arabian ambiance, rapid urbanization and development have turned it into one of the richest cities in the world.\\r\\n\\r\\nAbu Dhabi now plays host to tourists who come from all corners of the globe to witness this rich culture which is unspoiled by the intoxication of most tourist destinations. A visit to Abu Dhabi would be incomplete without trying the desert safari, walking along the waterfront Corniche,  boat rides, shopping at the many malls, visiting the Ferrari World, etc. Whatever you’re looking for, from historic sacred sites to the finest dining and high-end shopping to touring the Arabian Desert, Abu Dhabi has it all and more."}, {"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrival in Dubai | Dhow Marina Cruise Experience", "value": ["Welcome to Dubai Upon your arrival at the airport, you be transferred to the hotel. After you check in, relax for some time. In the evening, get driven to Dubai Marina Harbour for a Dhow Cruise experience. Sail through the neighbourhood, marvelling at its stunning skyscrapers and architectural wonders. Also, enjoy the traditional Tanoura dance show as you savour a delicious meal. Later, get transferred back to the hotel for an overnight stay"]}, {"title": "Day 2 - Visit to Burj Khalifa-124th & 125th Floor", "value": ["Get ready in the morning and board the transfer to Burj Khalifa. Upon arriving, ascend to the 124th and 125th floors and admire the panoramic views of Dubai. Also, enjoy the city's stunning skyline and landmarks from the observation decks, where you can capture unforgettable photos. Also, experience the thrill of standing on the highest observation decks in the world, and enjoy interactive displays that highlight Dubai's rich history. Later, get driven back to the hotel for an overnight stay."]}, {"title": "Day 3 - Desert Safari Experience with BBQ Dinner", "value": ["In the morning, get ready and board the transfer from the hotel for a desert safari experience. Upon arriving, enjoy a desert safari and traverse through golden dunes in a 4x4 vehicle. Also, experience dune bashing and sandboarding before settling down for a delightful BBQ dinner under the stars. Relish the rich flavours of grilled delicacies while soaking in the serene desert ambience. Later, you'll be driven back to the hotel for an overnight stay."]}, {"title": "Day 4 - Transfer to Abu Dhabi | Abu Dhabi Sightseeing Tour", "value": ["Get ready in the morning and check out from the hotel as you'll be driven to Abu Dhabi. Upon your arrival, check in at the hotel and relax for some time. Later, get ready for the sightseeing tour of the city. During this exploration, visit the Sheikh Zayed Grand Mosque, one of the world's largest mosques and Emirates Palace, home to award-winning restaurants and cafes, among other famous spots. Later, you'll be transferred back to the hotel for an overnight stay."]}, {"title": "Day 5 - Day Trip to Ferrari World & Warner Bros Studio", "value": ["Today, you'll be transferred from the hotel to enjoy two of the most amazing experiences. Firstly, explore Ferrari World, where you can try the world fastest roller coaster, the Formula Rossa and explore its diverse zones featuring amazing attractions. Then, get driven to Warner Bros. Studios. Upon arriving, enjoy thrilling rides and explore entertaining attractions. Later, you'll be driven back to the hotel for an overnight stay."]}, {"title": "Day 6 - Departure day", "value": ["In the morning, get ready and check out from the hotel to the airport to board your flight back home. This is where your trip ends."]}]	Discover Abu Dhabi and Dubai, where you'll experience a mix of futuristic skyscrapers, rich cultural treasures, and thrilling adventures. Experience Dubai Desert Safari, where you'll ride over golden dunes, witness a stunning desert sunset, and enjoy cultural performances under starry skies. Explore Ferrari World Abu Dhabi, home to the world's fastest roller coaster and a paradise for car enthusiasts. Marvel at the architectural masterpiece of Sheikh Zayed Grand Mosque, one of the world's largest mosques, featuring the world's largest hand-knotted carpet. Ascend to the 124th and 125th floors of Burj Khalifa, the tallest building in the world, for breathtaking panoramic views of Dubai's skyline	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Royal Falcon Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Marina Dhow Cruise", "index": 1}, {"text": "Airport Transfer", "index": 2}]}], [{"activityType": "HOTEL", "activityDescription": "Royal Falcon Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Burj Khalifa 124th floor", "index": 1}, {"text": "Dubai City Tour", "index": 2}]}], [{"activityType": "HOTEL", "activityDescription": "Royal Falcon Hotel"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Desert Safari", "index": 1}]}]]}, {"city": "Abu Dhabi", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "ibis Abu Dhabi Gate"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Enter Hotel Transfer Dubai To Abu Dhabi", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "ibis Abu Dhabi Gate"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Ferrari World", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "ibis Abu Dhabi Gate"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Departure", "index": 1}]}]]}]	2026-04-14 06:25:51.325
+MPP-1473-42837	Family Time In Dubai With Free Miracle Garden- Land Only	4	5	[{"place": "Dubai", "totalNights": 4}]	["https://imgcld.yatra.com/ytimages/image/upload/v3230807680/MarketPlaceHolidays/United Arab Emirates/uae_abu_dhabi_ferrari_world_1__wY8yjQ.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v9624155058/MarketPlaceHolidays/United Arab Emirates/images_5__TpSgRB.jpeg", "https://imgcld.yatra.com/ytimages/image/upload/v1576333051/Magnum/222/Ski-Dubai_hrCVKy.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1575807915/AdvNation/123/Dubai_Burj_Khalifa_rGZAtL.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1575807621/AdvNation/123/Aquaventuree_D5HNRA.jpg", "https://imgcld.yatra.com/ytimages/image/upload/v1553583888/Magnum/123/Dubai12_6leLN9.jpg"]	["Meals", "Hotel", "Transfer", "Sightseeing"]	["Shopping", "Honeymoon", "Family", "Bestseller"]	39999	[{"name": "Dubai", "image": "https://imgcld.yatra.com/ytimages/image/upload/t_magnum_cg_target/v1450091478/Dubai_skyline.jpg", "description": "Glittering like a jewel of the desert, the glamorous city of Dubai is a land of dreams. Ultramodern skyscrapers rising against an azure sky forms the gleaming skyline of this cosmopolitan city. As night cloaks Dubai, the city comes alive with twinkling lights adorning these tall superstructures. A drive along Downtown Dubai at night leaves you mesmerized by a fantasy land of lights and colours that surrounds you. Burj Khalifa, the tallest building in the world, will leave you open-mouthed in wonder. \\r\\n\\r\\nFall under the spell of the largest dancing fountain in the world, the Dubai Fountain. Swim with the sharks in the gigantic aquarium at Dubai Mall and lose yourself to a world of make-believe at Mall of the Emirates. A curious blend of traditions and modernization can be seen in every corner of Dubai. A perfect example of this is Al Fahidi Fort, the oldest building in Dubai which is surrounded by a fast-paced metropolis. The sprawling Miracle Garden and Dubai Creek Park is a testament to the determination of the people of Dubai, to beat the odds and grow vibrant blooms smack in the middle of the desert."}]	[{"title": "Day 1 - Arrive in Dubai - Dhow Cruise", "value": ["Arrive at Dubai International Airport and proceed to your hotel or resort. Settle in your room and by nightfall, set out to experience a traditional dinner on the Dhow Cruise. Treat your eyes to gorgeous views of the Dubai Creek and glitzy buildings, while you relish a sumptuous dinner, accompanied by lovely music at the background."]}, {"title": "Day 2 - Dubai City Tour - 124th Floor Burj Khalifa", "value": ["Have a delicious breakfast and board your coach for a wonderful sightseeing tour of Dubai. You will get to witness iconic attractions of the city and some of the world's most stunning architectural marvels. 124th floor of Burj Khalifa (2,722 ft), one of the tallest structures in the world that adds to the charm of the city of Dubai. Get to the 124th floor of the building and enjoy a breathtaking 360-degree view of the city; an experience that you wouldn't find anywhere else!"]}, {"title": "Day 3 - Desert Safari", "value": ["Savour a sumptuous breakfast on this day and spend the first half of the day shopping or relaxing in your rooms. Later in the noon, gear up for an exciting desert safari on the shimmering sands of Dubai. Enjoy an adrenaline-pumping safari tour and also try dune bashing, camel riding, quad biking, sand boarding etc. (at an additional cost). In the evening, you can enjoy entertaining performances like belly dancing, Tanoura Show and more that will give you a glimpse of Dubai's traditional cultures. Then end your day with a delectable meal."]}, {"title": "Day 4 - Day free for leisure", "value": ["After Breakfast Day free for leisure"]}, {"title": "Day 5 - Departure", "value": ["After Breakfast Day is free for shopping, and in afternoon check out from hotel and drop at the airport"]}]	The city of many firsts, Dubai has become one of the top tourist destinations in the world today. It is the first preference for families, friends, couples, honeymooners and almost all kinds of travelers, when holidays are round the corner. A trip to Dubai offers you endless things to see and do and will make you want to come back for more. From high-rise buildings to high-end cuisines, adrenaline-pumping activities to luxury cruises and exotic city views to fascinating dance performances, the city offers it all. Sounds exciting? Then make sure to book this affordable 5-day Dubai tour for an amazing holiday with your loved ones.	[{"city": "Dubai", "daysActivity": [[{"activityType": "HOTEL", "activityDescription": "Ramada by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Dhow cruise", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "124th Floor Burj Khalifa Visit", "index": 1}, {"text": "Dubai City Tour", "index": 2}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Desert Safari", "index": 1}]}], [{"activityType": "HOTEL", "activityDescription": "Ramada by Wyndham Dubai Deira"}], [{"activityType": "HOTEL", "activityDescription": "Ramada by Wyndham Dubai Deira"}, {"activityType": "SIGHTSEEING", "activityDescription": [{"text": "Day for shopping", "index": 1}]}]]}]	2026-04-14 06:25:58.066
+\.
+
+
+--
+-- Data for Name: User; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."User" (id, email, password, "firstName", "lastName", "createdAt") FROM stdin;
+1	umar@gmail.com	6c2b437ab43fa1dc4272ab7f97fa9d20a0abdae2a7af40795e48a3e803eca00c	umar	shaikh	2026-04-14 06:08:50.143
+\.
+
+
+--
+-- Data for Name: _prisma_migrations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public._prisma_migrations (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count) FROM stdin;
+0647f063-58d3-422d-92b9-9773a00173d2	27fc57301ca83458c525a0178351638e5a46949c6c55fa7d49370ac9929b74ba	2025-09-28 10:24:25.91297+05:30	20250928045425_remove_ml_models	\N	\N	2025-09-28 10:24:25.614048+05:30	1
+\.
+
+
+--
+-- Data for Name: admin; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.admin (id, email, password, "createAt") FROM stdin;
+1	admin@hypedjourney.com	8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918	2026-04-01 04:15:38.092
+\.
+
+
+--
+-- Name: Bookings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Bookings_id_seq"', 1, true);
+
+
+--
+-- Name: Flights_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Flights_id_seq"', 1, false);
+
+
+--
+-- Name: Hotels_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Hotels_id_seq"', 1, false);
+
+
+--
+-- Name: Jobs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."Jobs_id_seq"', 22, true);
+
+
+--
+-- Name: User_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public."User_id_seq"', 1, true);
+
+
+--
+-- Name: admin_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.admin_id_seq', 1, true);
+
+
+--
+-- Name: Bookings Bookings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Bookings"
+    ADD CONSTRAINT "Bookings_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Flights Flights_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Flights"
+    ADD CONSTRAINT "Flights_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Hotels Hotels_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Hotels"
+    ADD CONSTRAINT "Hotels_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Jobs Jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Jobs"
+    ADD CONSTRAINT "Jobs_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Trips Trips_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Trips"
+    ADD CONSTRAINT "Trips_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: User User_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."User"
+    ADD CONSTRAINT "User_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public._prisma_migrations
+    ADD CONSTRAINT _prisma_migrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: admin admin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.admin
+    ADD CONSTRAINT admin_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: Bookings_paymentIntent_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "Bookings_paymentIntent_key" ON public."Bookings" USING btree ("paymentIntent");
+
+
+--
+-- Name: Trips_id_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "Trips_id_key" ON public."Trips" USING btree (id);
+
+
+--
+-- Name: User_email_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "User_email_key" ON public."User" USING btree (email);
+
+
+--
+-- Name: admin_email_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX admin_email_key ON public.admin USING btree (email);
+
+
+--
+-- Name: Bookings Bookings_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Bookings"
+    ADD CONSTRAINT "Bookings_userId_fkey" FOREIGN KEY ("userId") REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE USAGE ON SCHEMA public FROM PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
