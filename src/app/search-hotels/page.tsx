@@ -22,6 +22,13 @@ const SearchHotels = () => {
       const data = await axios.get(
         `${USER_API_ROUTES.HOTELS_SCRAPE}?location=${selectedCity}`
       );
+      if (data.data.cached && data.data.status) {
+        setScrappedHotels(data.data.hotels ?? []);
+        setScraping(false);
+        setScrapingType(undefined);
+        router.push(`/hotels?date=${hotelDate}`);
+        return;
+      }
       if (data.data.id) {
         setLoadingJobId(data.data.id);
         setScraping(true);

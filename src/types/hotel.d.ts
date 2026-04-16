@@ -5,6 +5,6 @@ export interface HotelType {
   image: string;
   price: number;
   jobId: number;
-  location: number;
+  location: string;
   scrappedOn: string;
 }

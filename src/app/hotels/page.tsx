@@ -5,7 +5,6 @@ import { useAppStore } from "@/store";
 import { USER_API_ROUTES } from "@/utils/api-routes";
 import { Button } from "@nextui-org/react";
 import axios from "axios";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { FaChevronLeft } from "react-icons/fa";
@@ -34,7 +33,7 @@ const Hotels = () => {
     }
   };
   return (
-    <div className="m-10 px-[20vw] min-h-[80vh]">
+    <div className="m-10 px-[5vw] min-h-[80vh]">
       <Button
         className="my-5"
         variant="shadow"
@@ -53,34 +52,50 @@ const Hotels = () => {
         )}
         {scrapedHotels.length !== 0 && (
           <div>
-            <div className="grid grid-cols-3 gap-10">
+            <div className="grid grid-cols-2 gap-5">
               {scrapedHotels.map((hotel) => {
+                const imageUrl = normalizeHotelImageUrl(hotel.image);
                 return (
                   <div
                     key={hotel.id}
-                    className="flex flex-col items-center justify-center cursor-pointer shadow-md rounded-2xl p-4 border border-neutral-200"
+                    className="grid grid-cols-9 gap-5 rounded-2xl border border-neutral-300"
                   >
-                    <div className="mb-3  relative w-full h-48">
-                      <Image
-                        src={hotel.image}
+                    <div className="relative w-full h-48 col-span-3 overflow-hidden rounded-2xl bg-neutral-100">
+                      <img
+                        src={imageUrl}
                         alt="hotel"
-                        fill
-                        className="rounded-2xl"
+                        className="h-full w-full object-cover rounded-2xl"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (target.src !== FALLBACK_HOTEL_IMAGE) {
+                            target.src = FALLBACK_HOTEL_IMAGE;
+                          }
+                        }}
                       />
                     </div>
-                    <div className="w-full flex flex-col items-start gap-1">
-                      <h3 className="font-semibold capitalize text-neutral-900  text-base">
+                    <div className="col-span-6 pt-5 pr-5 flex flex-col gap-2">
+                      <h3 className="text-lg font-medium capitalize line-clamp-1">
                         {hotel.name}
                       </h3>
-                      <span className="text-sm text-neutral-500 font-normal">
-                        <strong className="text-black">${hotel.price}</strong>{" "}
-                        /night
-                      </span>
+                      <p className="text-sm text-neutral-600 line-clamp-2">
+                        Stay in {capitalizeText(String(hotel.location))} with
+                        handpicked Yatra options for your trip.
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-neutral-600">
+                          <strong className="text-black">₹{hotel.price}</strong> / night
+                        </span>
+                        <span className="text-xs bg-danger-100 text-danger-600 px-2 py-1 rounded-full capitalize">
+                          {String(hotel.location)}
+                        </span>
+                      </div>
                       <Button
                         size="md"
-                        variant="ghost"
+                        variant="shadow"
                         color="danger"
-                        className="mt-2"
+                        className="mt-1 w-fit"
                         onClick={() => userInfo && bookHotel(hotel.id)}
                       >
                         {!userInfo ? "Login to Book Now" : "Book Now"}
@@ -98,3 +113,22 @@ const Hotels = () => {
 };
 
 export default Hotels;
+
+const FALLBACK_HOTEL_IMAGE =
+  "https://imgcld.yatra.com/ytimages/image/upload/t_hotel_yatra_details_desktop/v1466824037/Hotel/Delhi/00012994/Facade_o8qt6n.jpg";
+
+function normalizeHotelImageUrl(rawUrl: string | null | undefined): string {
+  if (!rawUrl) return FALLBACK_HOTEL_IMAGE;
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return FALLBACK_HOTEL_IMAGE;
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  return FALLBACK_HOTEL_IMAGE;
+}
+
+function capitalizeText(value: string): string {
+  return value
+    .split(" ")
+    .map((v) => (v ? `${v[0].toUpperCase()}${v.slice(1).toLowerCase()}` : v))
+    .join(" ");
+}

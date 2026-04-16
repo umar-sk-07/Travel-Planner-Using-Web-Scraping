@@ -13,75 +13,75 @@ interface Flight {
 }
 
 export const startFlightScraping = async (page: Page): Promise<Flight[]> => {
+  // Google Flights does client-side route transitions. Wait for a stable DOM and retry on navigation races.
+  await page.waitForSelector("body", { timeout: 60000 });
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await scrapeGoogleFlights(page);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.includes("Execution context was destroyed") || attempt === 2) {
+        throw error;
+      }
+      await page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 15000 }).catch(() => null);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+  return [];
+};
+
+const scrapeGoogleFlights = async (page: Page): Promise<Flight[]> => {
   return await page.evaluate(async (): Promise<Flight[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 7000));
 
     const flights: Flight[] = [];
+    const seen = new Set<string>();
+    const candidates = Array.from(
+      document.querySelectorAll("li, div, section, article")
+    ).filter((el) => {
+      const text = ((el as HTMLElement).innerText || "").replace(/\s+/g, " ").trim();
+      if (!text) return false;
+      if (text.length < 40 || text.length > 650) return false;
+      const timePattern = /\b\d{1,2}:\d{2}(?:\s?[AP]M)?\b/gi;
+      const hasTimes = (text.match(timePattern) || []).length >= 2;
+      const hasPrice = /(?:₹|€|£|\$|AED|INR)\s?[\d,]+/i.test(text);
+      return hasTimes && hasPrice;
+    });
 
-    const flightSelectors = document.querySelectorAll(".nrc6-wrapper");
+    for (const node of candidates) {
+      const text = ((node as HTMLElement).innerText || "").replace(/\s+/g, " ").trim();
+      const times = text.match(/\b\d{1,2}:\d{2}(?:\s?[AP]M)?\b/gi) || [];
+      const priceMatch = text.match(/(?:₹|€|£|\$|AED|INR)\s?[\d,]+/i);
+      if (times.length < 2 || !priceMatch) continue;
 
-    flightSelectors.forEach((flightElement) => {
-      const airlineLogo = flightElement.querySelector("img")?.src || "";
-      const [rawDepartureTime, rawArrivalTime] = (
-        flightElement.querySelector(".vmXl")?.innerText || ""
-      ).split(" – ");
+      const price = parseInt(priceMatch[0].replace(/[^\d]/g, ""), 10);
+      if (!price || Number.isNaN(price) || price < 20) continue;
 
-      // Function to extract time and remove numeric values at the end
-      const extractTime = (rawTime: string): string => {
-        const timeWithoutNumbers = rawTime.replace(/[0-9+\s]+$/, "").trim();
-        return timeWithoutNumbers;
-      };
+      const airlineMatch = text.match(
+        /\b([A-Za-z][A-Za-z\s&.-]{2,45}(?:Airlines?|Airways|Air|Express|Jet|Emirates|Qatar|Etihad|Lufthansa|British Airways|Turkish|IndiGo|SpiceJet|Vistara|Akasa))\b/i
+      );
+      const durationMatch =
+        text.match(/\b\d+\s?hr(?:s)?\s?\d*\s?min?\b/i) ||
+        text.match(/\b\d+h(?:\s?\d+m)?\b/i);
+      const logo =
+        (node.querySelector("img") as HTMLImageElement | null)?.src?.trim() || "";
 
-      const departureTime = extractTime(rawDepartureTime);
-      const arrivalTime = extractTime(rawArrivalTime);
-      const flightDuration = (
-        flightElement.querySelector(".xdW8")?.children[0]?.innerText || ""
-      ).trim();
-
-      const airlineName = (
-        flightElement.querySelector(".VY2U")?.children[1]?.innerText || ""
-      ).trim();
-
-      // Extract price — Kayak obfuscates class names, so try multiple approaches
-      const priceSelectors = [
-        ".f8F1-price-text",
-        "[class*='price-text']",
-        "[class*='Price']",
-        "[class*='price']",
-        ".oVHK",
-        ".Iqt3",
-      ];
-      let rawPrice = "";
-      for (const sel of priceSelectors) {
-        const el = flightElement.querySelector(sel) as HTMLElement | null;
-        if (el?.innerText) { rawPrice = el.innerText; break; }
-      }
-      // Fallback: find any element whose text looks like a price (e.g. "$1,234" or "1,234")
-      if (!rawPrice) {
-        const allEls = flightElement.querySelectorAll("*");
-        for (const el of allEls) {
-          const text = (el as HTMLElement).innerText?.trim() || "";
-          // Match things like "$1,234" "₹12,345" "1,234" (3-5 digit numbers, possibly with commas)
-          if (/^[\$₹€£¥,\d\s]+$/.test(text) && /\d{3,}/.test(text) && text.length < 12) {
-            rawPrice = text;
-            break;
-          }
-        }
-      }
-      const price = parseInt(rawPrice.replace(/[^\d]/g, "").trim(), 10) || 0;
-
-      // Skip flights with no valid price or airline name
-      if (!price || !airlineName) return;
+      const key = `${times[0]}-${times[1]}-${price}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
 
       flights.push({
-        airlineLogo,
-        departureTime,
-        arrivalTime,
-        flightDuration,
-        airlineName,
+        airlineLogo: logo,
+        departureTime: times[0] ?? "",
+        arrivalTime: times[1] ?? "",
+        flightDuration: durationMatch?.[0] ?? "",
+        airlineName: airlineMatch?.[0] ?? "Google Flight",
         price,
       });
-    });
+
+      if (flights.length >= 40) break;
+    }
 
     return flights;
   });

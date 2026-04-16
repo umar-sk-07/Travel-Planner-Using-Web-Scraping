@@ -1,137 +1,141 @@
-import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
-import prisma from "@/lib/prisma";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 
-// Bright Data Booking Hotel Listings scraper
-// dataset_id: gd_m5mbdl081229ln6t4a
-// Docs: https://docs.brightdata.com/api-reference/rest-api/scraper
+import { Page } from "puppeteer";
 
-const BRIGHT_DATA_API_KEY = process.env.BRIGHT_DATA_API_KEY!;
-const DATASET_ID = "gd_m5mbdl081229ln6t4a";
-const BASE_URL = "https://api.brightdata.com/datasets/v3";
-
-interface BrightDataHotel {
-  url?: string;
-  hotel_id?: string;
-  title?: string;
-  location?: string;
-  country?: string;
-  city?: string;
-  images?: string[];
-  price?: number;
-  review_score?: number;
-  reviews_count?: number;
+interface Hotel {
+  title: string;
+  price: number;
+  photo: string;
 }
 
-// Step 1: Trigger a scrape job for a Booking.com search URL
-async function triggerScrape(location: string): Promise<string> {
-  // Build a Booking.com search URL for the given location
-  const searchUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(location)}&lang=en-us`;
-
-  const res = await fetch(
-    `${BASE_URL}/trigger?dataset_id=${DATASET_ID}&format=json&uncompressed_webhook=true`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${BRIGHT_DATA_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify([{ url: searchUrl }]),
-    }
-  );
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Bright Data trigger failed: ${res.status} ${text}`);
-  }
-
-  const data = await res.json();
-  const snapshotId: string = data.snapshot_id;
-  console.log(`Bright Data snapshot triggered: ${snapshotId}`);
-  return snapshotId;
-}
-
-// Step 2: Poll until the snapshot is ready (status: "ready" | "failed")
-async function waitForSnapshot(
-  snapshotId: string,
-  maxWaitMs = 600_000,
-  intervalMs = 10_000
-): Promise<void> {
-  const deadline = Date.now() + maxWaitMs;
-
-  while (Date.now() < deadline) {
-    const res = await fetch(`${BASE_URL}/progress/${snapshotId}`, {
-      headers: { Authorization: `Bearer ${BRIGHT_DATA_API_KEY}` },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Bright Data progress check failed: ${res.status}`);
-    }
-
-    const data = await res.json();
-    console.log(`Snapshot ${snapshotId} status: ${data.status}`);
-
-    if (data.status === "ready") return;
-    if (data.status === "failed") throw new Error(`Snapshot ${snapshotId} failed`);
-
-    await new Promise((r) => setTimeout(r, intervalMs));
-  }
-
-  throw new Error(`Snapshot ${snapshotId} timed out after ${maxWaitMs}ms`);
-}
-
-// Step 3: Download the snapshot results
-async function fetchSnapshot(snapshotId: string): Promise<BrightDataHotel[]> {
-  const res = await fetch(`${BASE_URL}/snapshot/${snapshotId}?format=json`, {
-    headers: { Authorization: `Bearer ${BRIGHT_DATA_API_KEY}` },
+export const startHotelScraping = async (
+  page: Page,
+  location: string
+): Promise<Hotel[]> => {
+  const hotelSearchUrl = `https://www.yatra.com/hotels?city.name=${encodeURIComponent(location)}`;
+  await page.goto(hotelSearchUrl, {
+    timeout: 120000,
+    waitUntil: "domcontentloaded",
   });
 
-  if (!res.ok) {
-    throw new Error(`Bright Data snapshot fetch failed: ${res.status}`);
+  await page.waitForSelector("body", { timeout: 30000 });
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
+  // Try to type and submit location if Yatra redirects to base page.
+  const inputSelectors = [
+    "input[placeholder*='City']",
+    "input[placeholder*='Location']",
+    "input[placeholder*='Hotel Name']",
+    "input[type='text']",
+  ];
+
+  for (const selector of inputSelectors) {
+    const inputHandle = await page.$(selector);
+    if (!inputHandle) continue;
+    try {
+      await page.click(selector, { clickCount: 3 });
+      await page.type(selector, location, { delay: 60 });
+      await page.keyboard.press("Enter");
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      break;
+    } catch {
+      // Continue trying with the next selector.
+    }
   }
 
-  return res.json();
-}
+  await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+  await new Promise((resolve) => setTimeout(resolve, 2500));
 
-// Main export — replaces the old Puppeteer-based scraper
-export const startHotelScraping = async (location: string) => {
-  console.log(`Starting Bright Data hotel scrape for: ${location}`);
-
-  const snapshotId = await triggerScrape(location);
-  await waitForSnapshot(snapshotId);
-  const raw = await fetchSnapshot(snapshotId);
-
-  console.log(`Bright Data returned ${raw.length} hotels`);
-
-  // Normalize to the shape the rest of the app expects
-  const hotels = raw
-    .filter((h) => h.title && h.price)
-    .map((h) => ({
-      title: h.title!,
-      price: h.price!,
-      photo: h.images?.[0] ?? "",
-    }));
-
-  return hotels;
-};
-
-// GET /api/hotels — returns stored hotels from DB
-export async function GET() {
-  try {
-    const hotels = await prisma.hotels.findMany({
-      orderBy: { scrappedOn: "desc" },
-    });
-    if (hotels.length > 0) {
-      return NextResponse.json({ hotels }, { status: 200 });
-    }
-    return NextResponse.json({ msg: "No hotels found." }, { status: 404 });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    return NextResponse.json(
-      { message: "An unexpected error occurred." },
-      { status: 500 }
+  return page.evaluate((): Hotel[] => {
+    const seen = new Set<string>();
+    const hotels: Hotel[] = [];
+    const cardCandidates = Array.from(
+      document.querySelectorAll("article, section, li, div")
     );
-  }
-}
+    const skipWords = [
+      "offer",
+      "offers",
+      "view details",
+      "recommended hotels",
+      "special hotel offers",
+      "login",
+      "signup",
+      "search",
+      "support",
+      "holiday",
+      "bus",
+      "trains",
+      "flight",
+    ];
+
+    for (const card of cardCandidates) {
+      const text = ((card as HTMLElement).innerText || "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (!text || !/₹\s?[\d,]+/.test(text)) continue;
+      if (text.length > 280) continue;
+      if (skipWords.some((word) => text.toLowerCase().includes(word))) continue;
+      if (!/\boff\b/i.test(text) && !/\bhotel\b/i.test(text) && !/\bresort\b/i.test(text)) {
+        continue;
+      }
+
+      const title =
+        (
+          (card.querySelector("h1, h2, h3, h4, .hotel-name, [class*='hotel']") as HTMLElement | null)
+            ?.innerText || ""
+        )
+          .replace(/\s+/g, " ")
+          .trim() ||
+        text.split("₹")[0]?.trim() ||
+        "";
+      if (!title || title.length > 90 || /\d+%\s*off/i.test(title)) continue;
+
+      const rawPrice = text.match(/₹\s?[\d,]+/)?.[0] ?? "";
+      const price = parseInt(rawPrice.replace(/[^\d]/g, ""), 10);
+      const imageCandidates = Array.from(
+        card.querySelectorAll("img")
+      ) as HTMLImageElement[];
+      let photo = "";
+      for (const img of imageCandidates) {
+        const srcset = img.getAttribute("srcset") || img.getAttribute("data-srcset") || "";
+        const parsedSrcset = srcset
+          .split(",")
+          .map((item) => item.trim().split(" ")[0])
+          .filter(Boolean);
+        const src =
+          img.getAttribute("src") ||
+          img.getAttribute("data-src") ||
+          img.getAttribute("data-original") ||
+          parsedSrcset[parsedSrcset.length - 1] ||
+          "";
+        const candidate = src.trim();
+        if (!candidate) continue;
+        if (/logo|icon|sprite|placeholder/i.test(candidate)) continue;
+        const width = Number(img.getAttribute("width") || "0");
+        const height = Number(img.getAttribute("height") || "0");
+        if ((width > 0 && width < 120) || (height > 0 && height < 90)) continue;
+        photo = candidate;
+        break;
+      }
+
+      if (!price || Number.isNaN(price) || price < 500) continue;
+      if (!photo) continue;
+
+      const key = `${title.toLowerCase()}-${price}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      hotels.push({
+        title,
+        price,
+        photo,
+      });
+
+      if (hotels.length >= 40) break;
+    }
+
+    return hotels;
+  });
+};

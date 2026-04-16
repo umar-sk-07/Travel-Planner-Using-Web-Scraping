@@ -82,9 +82,52 @@ export const register = async () => {
           } else if (job.data.jobType.type === "flight") {
             console.log("in flight scraping");
             console.log("Connected! Navigating to " + job.data.url);
-            await page.goto(job.data.url, { timeout: 120000, waitUntil: "domcontentloaded" });
+            await page.goto(job.data.url, {
+              timeout: 120000,
+              waitUntil: "domcontentloaded",
+            });
+            if (job.data.jobType.sourceSite === "google-flights") {
+              const source = job.data.jobType.source;
+              const destination = job.data.jobType.destination;
+              const date = job.data.jobType.date;
+              const expectedRouteTokens = [source.toUpperCase(), destination.toUpperCase()];
+
+              const routeReady = await page
+                .waitForFunction(
+                  ({ tokens }) => {
+                    const text = (document.body?.innerText || "").toUpperCase();
+                    return tokens.some((token) => text.includes(token));
+                  },
+                  {
+                    timeout: 20000,
+                  },
+                  { tokens: expectedRouteTokens }
+                )
+                .then(() => true)
+                .catch(() => false);
+
+              if (!routeReady) {
+                const forcedUrl = `https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&q=${encodeURIComponent(
+                  `Flights from ${source} to ${destination} on ${date} one way`
+                )}`;
+                console.log("Google route state not ready, forcing URL:", forcedUrl);
+                await page.goto(forcedUrl, {
+                  timeout: 120000,
+                  waitUntil: "domcontentloaded",
+                });
+                await new Promise((resolve) => setTimeout(resolve, 4000));
+              }
+            }
             console.log("Navigated! Scraping page content...");
             const flights = await startFlightScraping(page);
+            if (!flights.length) {
+              const title = await page.title();
+              const bodyTextSnippet = await page.evaluate(() =>
+                (document.body?.innerText || "").replace(/\s+/g, " ").slice(0, 220)
+              );
+              console.log("No flights parsed. Page title:", title);
+              console.log("No flights parsed. Body snippet:", bodyTextSnippet);
+            }
             console.log(`Flight scraping done. Found ${flights.length} flights:`, JSON.stringify(flights.slice(0, 2)));
 
             await prisma.jobs.update({
@@ -109,8 +152,10 @@ export const register = async () => {
               });
             }
           } else if (job.data.jobType.type === "hotels") {
-            console.log("Starting Bright Data hotel scrape for: " + job.data.location);
-            const hotels = await startHotelScraping(job.data.location);
+            console.log("Starting Yatra hotel scrape for: " + job.data.location);
+            const hotels = await startHotelScraping(page, job.data.location);
+            const location =
+              job.data.jobType.location || job.data.location || "unknown";
 
             console.log(`Scraping Complete, ${hotels.length} hotels found.`);
 
@@ -129,7 +174,7 @@ export const register = async () => {
                     image: hotel.photo,
                     price: hotel.price,
                     jobId: job.data.id,
-                    location: job.data.jobType.location.toLowerCase(),
+                    location: String(location).toLowerCase(),
                   },
                 });
                 console.log(`${hotel.title} inserted in DB.`);
