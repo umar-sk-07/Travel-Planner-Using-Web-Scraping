@@ -1,0 +1,457 @@
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Namespace
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trip-planner
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# ConfigMap for environment variables (non-sensitive)
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trip-planner-config
+  namespace: trip-planner
+data:
+  POSTGRES_USER: "user"
+  POSTGRES_DB: "trip_planner"
+  DATABASE_URL: "postgresql://user:password@postgres:5432/trip_planner"
+  REDIS_URL: "redis://redis:6379"
+  NEXT_PUBLIC_DOMAIN: "http://localhost:3000"
+  NODE_ENV: "production"
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Secret for sensitive data (base64 encoded)
+# IMPORTANT: Replace these with actual base64-encoded values
+# Example: echo -n "your-secret" | base64
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: Secret
+metadata:
+  name: trip-planner-secrets
+  namespace: trip-planner
+type: Opaque
+data:
+  POSTGRES_PASSWORD: cGFzc3dvcmQ=  # "password" in base64
+  JWT_KEY: U1VQRVJfU0VDUkVUX0tFWUAyN0AyMDAz
+  SBR_WS_ENDPOINT: d3NzOi8vYnJkLWN1c3RvbWVyLWhsXzg3ZmIyNWIyLXpvbmUtc2NyYXBpbmdfYnJvd3NlcjE6MGxrZ3YzZnlrYTM4QGJyZC5zdXBlcnByb3h5LmlvOjkyMjI=
+  BRIGHT_DATA_API_KEY: Y2Y4Y2UyN2ItYzRjMi00MTc3LThjYmYtNzRkODk0MmY2ZWU0
+  NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY: QUl6YVN5QzlnZU5ScWNGTUxUWURCaDlGeURfUGFLcDJYVDFlT19j
+  STRIPE_KEY: c2tfdGVzdF81MU1VMGFIU0ZJcUo1TzFiRnVwTVdIM09Qa1JyZGxFY3lPcHdnT0U4Nkg5S1hVa1d3VHJqNDM3dHB1cEJGb1oySHZKa2JtNGNoOUI0NDYxNnNCT1A4WVVkbzAwWU05dE16elY=
+  NEXT_PUBLIC_STRIPE_PUBLIC_KEY: cGtfdGVzdF81MU1VMGFIU0ZJcUo1TzFiRlhPRjQ1a1BzSW0xUHJ4S2RKd2d3WWMzTXI5YzVWS01SYjNRUG1PMkRmVWNHaVFnZ2ZGSTlGVVhhVDhYb0lLWnlyd3JtZVAwSzAwV2Z4enFzWEg=
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# PersistentVolumeClaim for PostgreSQL data
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: trip-planner
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard  # Change based on your cluster (gp2 for AWS, standard for minikube)
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# PostgreSQL Service
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: trip-planner
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  clusterIP: None  # Headless service for StatefulSet
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# PostgreSQL StatefulSet
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: trip-planner
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: POSTGRES_DB
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U user -d trip_planner
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U user -d trip_planner
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 5
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Redis Service
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: trip-planner
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+  type: ClusterIP
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Redis Deployment
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: trip-planner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:6-alpine
+        ports:
+        - containerPort: 6379
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Prisma Migration Job
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prisma-migrate
+  namespace: trip-planner
+spec:
+  ttlSecondsAfterFinished: 100  # Cleanup after completion
+  template:
+    metadata:
+      labels:
+        app: migrate
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+      # Wait for PostgreSQL to be ready
+      - name: wait-for-postgres
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;']
+      containers:
+      - name: migrate
+        image: umar272003/trip-planner-frontend:latest  # REPLACE with your actual image
+        command: ["npx", "prisma", "db", "push", "--accept-data-loss"]
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: DATABASE_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Frontend Service
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: trip-planner
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30000  # Accessible at <node-ip>:30000
+  type: NodePort  # Change to LoadBalancer for cloud environments
+
+---
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# FIXED: Frontend Deployment (simplified init containers)
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: trip-planner
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      initContainers:
+      # Wait for PostgreSQL to be ready
+      - name: wait-for-postgres
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;']
+      # Wait for Redis to be ready
+      - name: wait-for-redis
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done;']
+      # Add delay to ensure migration has time to complete
+      - name: wait-for-migration
+        image: busybox:1.28
+        command: ['sh', '-c', 'echo "Waiting for migration to complete..."; sleep 30;']
+      containers:
+      - name: frontend
+        image: umar272003/trip-planner-frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: REDIS_URL
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: NODE_ENV
+        - name: NEXT_PUBLIC_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: NEXT_PUBLIC_DOMAIN
+        - name: JWT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: JWT_KEY
+        - name: SBR_WS_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: SBR_WS_ENDPOINT
+        - name: BRIGHT_DATA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: BRIGHT_DATA_API_KEY
+        - name: NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY
+        - name: STRIPE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: STRIPE_KEY
+        - name: NEXT_PUBLIC_STRIPE_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: NEXT_PUBLIC_STRIPE_PUBLIC_KEY
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 120  # Increased for Next.js startup
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 6
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 6
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# FIXED: Worker Deployment (simplified init containers)
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: trip-planner
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      initContainers:
+      # Wait for PostgreSQL to be ready
+      - name: wait-for-postgres
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;']
+      # Wait for Redis to be ready
+      - name: wait-for-redis
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done;']
+      # Add delay to ensure migration has time to complete
+      - name: wait-for-migration
+        image: busybox:1.28
+        command: ['sh', '-c', 'echo "Waiting for migration to complete..."; sleep 30;']
+      containers:
+      - name: worker
+        image: umar272003/trip-planner-worker:latest
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: REDIS_URL
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: trip-planner-config
+              key: NODE_ENV
+        - name: SBR_WS_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: SBR_WS_ENDPOINT
+        - name: BRIGHT_DATA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: trip-planner-secrets
+              key: BRIGHT_DATA_API_KEY
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      restartPolicy: Always

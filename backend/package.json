@@ -1,0 +1,23 @@
+{
+  "name": "hyped-journey-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node worker.ts",
+    "build": "tsc",
+    "start": "node dist/worker.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "bullmq": "^5.13.2",
+    "ioredis": "^5.4.1",
+    "puppeteer": "^23.4.0",
+    "puppeteer-core": "^23.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "prisma": "^5.18.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  }
+}
