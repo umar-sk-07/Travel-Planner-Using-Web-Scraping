@@ -61,14 +61,15 @@ metadata:
   name: postgres-pvc
   namespace: trip-planner
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 10Gi
-  storageClassName: gp2  # AWS EKS - General Purpose SSD v3 (recommended)
+  storageClassName: gp2
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
