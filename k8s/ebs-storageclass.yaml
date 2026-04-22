@@ -1,17 +1,13 @@
-# ══════════════════════════════════════════════════════════════════════════════
-# COMMENTED OUT FOR ARGOCD AUTO-SYNC TESTING
-# ══════════════════════════════════════════════════════════════════════════════
-
-# apiVersion: storage.k8s.io/v1
-# kind: StorageClass
-# metadata:
-#   name: ebs-gp2
-#   annotations:
-#     storageclass.kubernetes.io/is-default-class: "true"
-# provisioner: ebs.csi.eks.amazonaws.com
-# parameters:
-#   type: gp2
-#   fsType: ext4
-# volumeBindingMode: WaitForFirstConsumer
-# reclaimPolicy: Delete
-# allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-gp2
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: ebs.csi.eks.amazonaws.com
+parameters:
+  type: gp2
+  fsType: ext4
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+allowVolumeExpansion: true
