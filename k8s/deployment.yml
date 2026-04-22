@@ -53,26 +53,6 @@ data:
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
-# PersistentVolumeClaim for PostgreSQL data
-# ══════════════════════════════════════════════════════════════════════════════
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgres-pvc
-  namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
-    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  # storageClassName omitted — uses cluster default StorageClass
-
----
-# ══════════════════════════════════════════════════════════════════════════════
 # PostgreSQL Service
 # ══════════════════════════════════════════════════════════════════════════════
 apiVersion: v1
@@ -156,10 +136,16 @@ spec:
           periodSeconds: 5
           timeoutSeconds: 5
           failureThreshold: 5
-      volumes:
-      - name: postgres-storage
-        persistentVolumeClaim:
-          claimName: postgres-pvc
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      # storageClassName omitted — uses cluster default StorageClass
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
@@ -291,12 +277,11 @@ spec:
   ports:
     - port: 3000
       targetPort: 3000
-  type: LoadBalancer
+  type: ClusterIP
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
 # Frontend Deployment
-
 # ══════════════════════════════════════════════════════════════════════════════
 apiVersion: apps/v1
 kind: Deployment
@@ -478,7 +463,6 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "500m"
-      restartPolicy: Always
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
