@@ -22,7 +22,7 @@ data:
   DATABASE_URL: "postgresql://user:password@postgres:5432/trip_planner"
   REDIS_URL: "redis://redis:6379"
   NEXT_PUBLIC_DOMAIN: "http://frontend:3000"
-  NODE_ENV: "production"
+  NODE_ENV: "development"
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
