@@ -6,8 +6,6 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
@@ -18,8 +16,6 @@ kind: ConfigMap
 metadata:
   name: trip-planner-config
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
 data:
   POSTGRES_USER: "user"
   POSTGRES_DB: "trip_planner"
@@ -39,11 +35,9 @@ kind: Secret
 metadata:
   name: trip-planner-secrets
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
 type: Opaque
 data:
-  POSTGRES_PASSWORD: cGFzc3dvcmQ=  # "password" in base64
+  POSTGRES_PASSWORD: cGFzc3dvcmQ=
   JWT_KEY: U1VQRVJfU0VDUkVUX0tFWUAyN0AyMDAz
   SBR_WS_ENDPOINT: d3NzOi8vYnJkLWN1c3RvbWVyLWhsXzg3ZmIyNWIyLXpvbmUtc2NyYXBpbmdfYnJvd3NlcjE6MGxrZ3YzZnlrYTM4QGJyZC5zdXBlcnByb3h5LmlvOjkyMjI=
   BRIGHT_DATA_API_KEY: Y2Y4Y2UyN2ItYzRjMi00MTc3LThjYmYtNzRkODk0MmY2ZWU0
@@ -53,22 +47,20 @@ data:
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
-# PostgreSQL Service
+# PostgreSQL Headless Service (required for StatefulSet DNS)
 # ══════════════════════════════════════════════════════════════════════════════
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   selector:
     app: postgres
   ports:
     - port: 5432
       targetPort: 5432
-  clusterIP: None  # Headless service for StatefulSet
+  clusterIP: None
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
@@ -79,8 +71,6 @@ kind: StatefulSet
 metadata:
   name: postgres
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   serviceName: postgres
   replicas: 1
@@ -142,10 +132,10 @@ spec:
     spec:
       accessModes:
         - ReadWriteOnce
+      storageClassName: gp2
       resources:
         requests:
           storage: 10Gi
-      # storageClassName omitted — uses cluster default StorageClass
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
@@ -156,8 +146,6 @@ kind: Service
 metadata:
   name: redis
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   selector:
     app: redis
@@ -175,8 +163,6 @@ kind: Deployment
 metadata:
   name: redis
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   replicas: 1
   selector:
@@ -221,16 +207,15 @@ spec:
 ---
 # ══════════════════════════════════════════════════════════════════════════════
 # Prisma Migration Job
+# Ordering handled by init containers, not sync-waves
 # ══════════════════════════════════════════════════════════════════════════════
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: prisma-migrate
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "2"
 spec:
-  ttlSecondsAfterFinished: 100  # Cleanup after completion
+  ttlSecondsAfterFinished: 100
   template:
     metadata:
       labels:
@@ -238,13 +223,12 @@ spec:
     spec:
       restartPolicy: OnFailure
       initContainers:
-      # Wait for PostgreSQL to be ready
       - name: wait-for-postgres
         image: busybox:1.28
         command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;']
       containers:
       - name: migrate
-        image: umar272003/trip-planner-frontend:latest  # REPLACE with your actual image
+        image: umar272003/trip-planner-frontend:latest
         command: ["npx", "prisma", "db", "push", "--accept-data-loss"]
         env:
         - name: DATABASE_URL
@@ -269,8 +253,6 @@ kind: Service
 metadata:
   name: frontend
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "3"
 spec:
   selector:
     app: frontend
@@ -288,8 +270,6 @@ kind: Deployment
 metadata:
   name: frontend
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "3"
 spec:
   replicas: 2
   selector:
@@ -301,15 +281,12 @@ spec:
         app: frontend
     spec:
       initContainers:
-      # Wait for PostgreSQL to be ready
       - name: wait-for-postgres
         image: busybox:1.28
         command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;']
-      # Wait for Redis to be ready
       - name: wait-for-redis
         image: busybox:1.28
         command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done;']
-      # Add delay to ensure migration has time to complete
       - name: wait-for-migration
         image: busybox:1.28
         command: ['sh', '-c', 'echo "Waiting for migration to complete..."; sleep 30;']
@@ -373,7 +350,7 @@ spec:
           httpGet:
             path: /
             port: 3000
-          initialDelaySeconds: 120  # Increased for Next.js startup
+          initialDelaySeconds: 120
           periodSeconds: 10
           timeoutSeconds: 10
           failureThreshold: 6
@@ -402,8 +379,6 @@ kind: Deployment
 metadata:
   name: worker
   namespace: trip-planner
-  annotations:
-    argocd.argoproj.io/sync-wave: "3"
 spec:
   replicas: 2
   selector:
@@ -415,15 +390,12 @@ spec:
         app: worker
     spec:
       initContainers:
-      # Wait for PostgreSQL to be ready
       - name: wait-for-postgres
         image: busybox:1.28
         command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;']
-      # Wait for Redis to be ready
       - name: wait-for-redis
         image: busybox:1.28
         command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done;']
-      # Add delay to ensure migration has time to complete
       - name: wait-for-migration
         image: busybox:1.28
         command: ['sh', '-c', 'echo "Waiting for migration to complete..."; sleep 30;']
@@ -466,10 +438,8 @@ spec:
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
-# Ingress — exposes frontend via nginx-ingress (no hardcoded domain)
-# Traffic flows: internet → NLB → ingress-nginx → frontend service
-# NEXT_PUBLIC_DOMAIN uses the internal cluster service name so all
-# server-side API calls stay within the cluster (same pattern as retail-store)
+# Ingress — exposes frontend via ingress-nginx
+# No hardcoded domain — accepts traffic on the raw NLB hostname AWS assigns
 # ══════════════════════════════════════════════════════════════════════════════
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -477,9 +447,7 @@ metadata:
   name: trip-planner-ingress
   namespace: trip-planner
   annotations:
-    argocd.argoproj.io/sync-wave: "4"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
     nginx.ingress.kubernetes.io/proxy-body-size: "8m"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
