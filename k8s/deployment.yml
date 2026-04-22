@@ -132,7 +132,7 @@ spec:
     spec:
       accessModes:
         - ReadWriteOnce
-      storageClassName: gp2
+      storageClassName: ebs-gp2
       resources:
         requests:
           storage: 10Gi
