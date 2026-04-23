@@ -1,4 +1,4 @@
-const baseRoute =  `${process.env.NEXT_PUBLIC_DOMAIN}/api`;
+const baseRoute = `/api`;
 
 export const ADMIN_API_ROUTES = {
 LOGIN:`${baseRoute}/admin/login`,
