@@ -3,11 +3,24 @@ kind: StorageClass
 metadata:
   name: ebs-gp2
   annotations:
+    # Makes this the default StorageClass — any PVC without storageClassName
+    # will use this automatically
     storageclass.kubernetes.io/is-default-class: "true"
-provisioner: ebs.csi.eks.amazonaws.com
+
+# This is the correct provisioner for the aws-ebs-csi-driver EKS managed addon.
+# Works with both standard EKS and EKS Auto Mode.
+provisioner: ebs.csi.aws.com
+
 parameters:
   type: gp2
   fsType: ext4
+
+# WaitForFirstConsumer is critical on EKS — it delays volume creation until
+# the pod is scheduled to a node. This ensures the EBS volume is provisioned
+# in the SAME Availability Zone as the node (EBS volumes are AZ-locked).
+# If you used Immediate, the volume might be created in AZ-a but your pod
+# schedules to AZ-b → pod stuck in Pending forever.
 volumeBindingMode: WaitForFirstConsumer
+
 reclaimPolicy: Delete
 allowVolumeExpansion: true
