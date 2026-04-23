@@ -21,8 +21,8 @@ data:
   POSTGRES_DB: "trip_planner"
   DATABASE_URL: "postgresql://user:password@postgres:5432/trip_planner"
   REDIS_URL: "redis://redis:6379"
-  NODE_ENV: "production"    # was "development" — fix this
-  NEXT_PUBLIC_DOMAIN: "http://k8s-ingressn-ingressn-0fb72ed62f-afaaa52a7392df8d.elb.ap-south-1.amazonaws.com/"  # your actual LB URL
+  NEXT_PUBLIC_DOMAIN: "http://frontend:3000"
+  NODE_ENV: "development"
 
 ---
 # ══════════════════════════════════════════════════════════════════════════════
