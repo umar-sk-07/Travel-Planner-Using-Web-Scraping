@@ -1,26 +1,21 @@
+# EKS Auto Mode has a BUILT-IN storage provisioner.
+# It does NOT use the standalone aws-ebs-csi-driver addon.
+# The correct provisioner for Auto Mode is ebs.csi.eks.amazonaws.com
+# (NOT ebs.csi.aws.com which is for the standalone addon on standard EKS)
+#
+# Auto Mode nodes register topology keys under ebs.csi.eks.amazonaws.com/zone
+# not topology.ebs.csi.aws.com/zone — that's why CSINode topology lookup fails.
+
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: ebs-gp2
   annotations:
-    # Makes this the default StorageClass — any PVC without storageClassName
-    # will use this automatically
     storageclass.kubernetes.io/is-default-class: "true"
-
-# This is the correct provisioner for the aws-ebs-csi-driver EKS managed addon.
-# Works with both standard EKS and EKS Auto Mode.
-provisioner: ebs.csi.aws.com
-
+provisioner: ebs.csi.eks.amazonaws.com      # Auto Mode's built-in EBS provisioner
 parameters:
-  type: gp2
+  type: gp3                                  # gp3 is cheaper and faster than gp2
   fsType: ext4
-
-# WaitForFirstConsumer is critical on EKS — it delays volume creation until
-# the pod is scheduled to a node. This ensures the EBS volume is provisioned
-# in the SAME Availability Zone as the node (EBS volumes are AZ-locked).
-# If you used Immediate, the volume might be created in AZ-a but your pod
-# schedules to AZ-b → pod stuck in Pending forever.
-volumeBindingMode: WaitForFirstConsumer
-
+volumeBindingMode: WaitForFirstConsumer      # Still correct — AZ-aware binding
 reclaimPolicy: Delete
 allowVolumeExpansion: true
