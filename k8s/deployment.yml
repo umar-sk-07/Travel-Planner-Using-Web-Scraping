@@ -82,6 +82,8 @@ spec:
       labels:
         app: postgres
     spec:
+      nodeSelector:
+        karpenter.sh/nodepool: general-purpose # added by claude
       containers:
       - name: postgres
         image: postgres:14
@@ -174,6 +176,8 @@ spec:
       labels:
         app: redis
     spec:
+      nodeSelector:
+        karpenter.sh/nodepool: general-purpose  # added by claude
       containers:
       - name: redis
         image: redis:6-alpine
@@ -222,6 +226,8 @@ spec:
       labels:
         app: migrate
     spec:
+      nodeSelector:
+        karpenter.sh/nodepool: general-purpose  # added by claude
       restartPolicy: OnFailure
       initContainers:
       - name: wait-for-postgres
@@ -281,6 +287,8 @@ spec:
       labels:
         app: frontend
     spec:
+      nodeSelector:
+        karpenter.sh/nodepool: general-purpose  # added by claude
       initContainers:
       - name: wait-for-postgres
         image: busybox:1.28
@@ -390,6 +398,8 @@ spec:
       labels:
         app: worker
     spec:
+      nodeSelector:
+        karpenter.sh/nodepool: general-purpose  # added by claude
       initContainers:
       - name: wait-for-postgres
         image: busybox:1.28
