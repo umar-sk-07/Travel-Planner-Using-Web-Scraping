@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       // Set the access token cookie using the NextResponse `cookies.set()` method
       response.cookies.set("access_token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Set this to true in production
+        secure: false, // No HTTPS, secure flag disabled
         sameSite: "lax", // Adjust sameSite attribute based on your needs
         maxAge: 60 * 60 * 48, // 48 hours in seconds
         path: "/", // Path where cookie is valid
