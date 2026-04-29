@@ -235,7 +235,7 @@ spec:
         command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;']
       containers:
       - name: migrate
-        image: umar272003/trip-planner-frontend:v2
+        image: umar272003/trip-planner-frontend:v1
         command: ["npx", "prisma", "db", "push", "--accept-data-loss"]
         env:
         - name: DATABASE_URL
@@ -301,7 +301,7 @@ spec:
         command: ['sh', '-c', 'echo "Waiting for migration to complete..."; sleep 30;']
       containers:
       - name: frontend
-        image: umar272003/trip-planner-frontend:v2
+        image: umar272003/trip-planner-frontend:v1
         ports:
         - containerPort: 3000
         env:
@@ -412,7 +412,7 @@ spec:
         command: ['sh', '-c', 'echo "Waiting for migration to complete..."; sleep 30;']
       containers:
       - name: worker
-        image: umar272003/trip-planner-worker:v2
+        image: umar272003/trip-planner-worker:v1
         env:
         - name: DATABASE_URL
           valueFrom:
